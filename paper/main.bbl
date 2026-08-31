@@ -1,0 +1,307 @@
+\begin{thebibliography}{35}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Ackerman and Marley(2001)]{ackerman2001}
+Andrew~S. Ackerman and Mark~S. Marley.
+\newblock Precipitating condensation clouds in substellar atmospheres.
+\newblock \emph{The Astrophysical Journal}, 556:\penalty0 872--884, 2001.
+
+\bibitem[Alsing and Wandelt(2019)]{alsing2019}
+Justin Alsing and Benjamin Wandelt.
+\newblock Nuisance hardened data compression for fast likelihood-free
+  inference.
+\newblock \emph{Monthly Notices of the Royal Astronomical Society},
+  488:\penalty0 5093--5103, 2019.
+\newblock arXiv:1903.01473.
+
+\bibitem[Asplund et~al.(2009)Asplund, Grevesse, Sauval, and Scott]{asplund2009}
+Martin Asplund, Nicolas Grevesse, A.~Jacques Sauval, and Pat Scott.
+\newblock The chemical composition of the {Sun}.
+\newblock \emph{Annual Review of Astronomy and Astrophysics}, 47:\penalty0
+  481--522, 2009.
+
+\bibitem[Barstow et~al.(2020)Barstow, Changeat, Garland, Line, Rocchetto, and
+  Waldmann]{barstow2020}
+Joanna~K. Barstow, Quentin Changeat, Ryan Garland, Michael~R. Line, Marco
+  Rocchetto, and Ingo~P. Waldmann.
+\newblock A comparison of exoplanet spectroscopic retrieval tools.
+\newblock \emph{Monthly Notices of the Royal Astronomical Society},
+  493:\penalty0 4884--4909, 2020.
+\newblock arXiv:2002.01063.
+
+\bibitem[Cannon et~al.(2022)Cannon, Ward, and Schmon]{cannon2022}
+Patrick Cannon, Daniel Ward, and Sebastian~M. Schmon.
+\newblock Investigating the impact of model misspecification in neural
+  simulation-based inference.
+\newblock \emph{arXiv preprint}, 2022.
+\newblock arXiv:2209.01845.
+
+\bibitem[Cranmer et~al.(2020)Cranmer, Brehmer, and Louppe]{cranmer2020}
+Kyle Cranmer, Johann Brehmer, and Gilles Louppe.
+\newblock The frontier of simulation-based inference.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 117\penalty0
+  (48):\penalty0 30055--30062, 2020.
+\newblock arXiv:1911.01429.
+
+\bibitem[Delaunoy et~al.(2022)Delaunoy, Hermans, Rozet, Wehenkel, and
+  Louppe]{delaunoy2022}
+Arnaud Delaunoy, Joeri Hermans, Fran\c{c}ois Rozet, Antoine Wehenkel, and
+  Gilles Louppe.
+\newblock Towards reliable simulation-based inference with balanced neural
+  ratio estimation.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2022.
+\newblock arXiv:2208.13624.
+
+\bibitem[Gharib-Nezhad and Line(2019)]{gharibnezhad2019}
+Ehsan Gharib-Nezhad and Michael~R. Line.
+\newblock The influence of {H}$_2${O} pressure broadening in high-metallicity
+  exoplanet atmospheres.
+\newblock \emph{The Astrophysical Journal}, 872:\penalty0 27, 2019.
+\newblock arXiv:1809.02548.
+
+\bibitem[Greenberg et~al.(2019)Greenberg, Nonnenmacher, and
+  Macke]{greenberg2019}
+David~S. Greenberg, Marcel Nonnenmacher, and Jakob~H. Macke.
+\newblock Automatic posterior transformation for likelihood-free inference.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, 2019.
+\newblock arXiv:1905.07488.
+
+\bibitem[Hargreaves et~al.(2020)Hargreaves, Gordon, Rey, Nikitin, Tyuterev,
+  Kochanov, and Rothman]{hargreaves2020}
+Robert~J. Hargreaves, Iouli~E. Gordon, Michael Rey, Andrei~V. Nikitin,
+  Vladimir~G. Tyuterev, Roman~V. Kochanov, and Laurence~S. Rothman.
+\newblock An accurate, extensive, and practical line list of methane for the
+  {HITEMP} database.
+\newblock \emph{The Astrophysical Journal Supplement Series}, 247:\penalty0 55,
+  2020.
+
+\bibitem[Hermans et~al.(2022)Hermans, Delaunoy, Rozet, Wehenkel, Begy, and
+  Louppe]{hermans2022}
+Joeri Hermans, Arnaud Delaunoy, Fran\c{c}ois Rozet, Antoine Wehenkel, Volodimir
+  Begy, and Gilles Louppe.
+\newblock A trust crisis in simulation-based inference? your posterior
+  approximations can be unfaithful.
+\newblock \emph{Transactions on Machine Learning Research}, 2022.
+\newblock arXiv:2110.06581.
+
+\bibitem[Hood et~al.(2024)Hood, Mukherjee, Fortney, Line, Faherty,
+  Alejandro~Merchan, Burningham, Su\'arez, Kiman, Gagn\'e, Beichman, Vos,
+  Bardalez~Gagliuffi, Meisner, and Gonzales]{hood2024}
+Callie~E. Hood, Sagnick Mukherjee, Jonathan~J. Fortney, Michael~R. Line,
+  Jacqueline~K. Faherty, Sherelyn Alejandro~Merchan, Ben Burningham, Genaro
+  Su\'arez, Rocio Kiman, Jonathan Gagn\'e, Charles~A. Beichman, Johanna~M. Vos,
+  Daniella Bardalez~Gagliuffi, Aaron~M. Meisner, and Eileen~C. Gonzales.
+\newblock High-precision atmospheric constraints for a cool {T} dwarf from
+  {JWST} spectroscopy ({2MASS} {J04151954-0935066}).
+\newblock \emph{arXiv preprint}, 2024.
+\newblock arXiv:2402.05345.
+
+\bibitem[Hosokawa et~al.(2025)Hosokawa, Kotani, Kawahara, Kawashima, Masuda,
+  Takahashi, and Yoshioka]{hosokawa2025}
+Ko~Hosokawa, Takayuki Kotani, Hajime Kawahara, Yui Kawashima, Kento Masuda, Aoi
+  Takahashi, and Kazuo Yoshioka.
+\newblock Measurement of methane line broadening in hot hydrogen/helium
+  atmospheres at $\lambda = 1.60$--$1.63\,\mu$m for substellar object
+  spectroscopy.
+\newblock \emph{The Astrophysical Journal}, 984:\penalty0 92, 2025.
+\newblock arXiv:2503.22031.
+
+\bibitem[Kawahara et~al.(2022)Kawahara, Kawashima, Masuda, Crossfield, Pannier,
+  and van~den Bekerom]{kawahara2022}
+Hajime Kawahara, Yui Kawashima, Kento Masuda, Ian J.~M. Crossfield, Erwan
+  Pannier, and Dirk van~den Bekerom.
+\newblock Auto-differentiable spectrum model for high-dispersion
+  characterization of exoplanets and brown dwarfs.
+\newblock \emph{The Astrophysical Journal Supplement Series}, 258:\penalty0 31,
+  2022.
+\newblock arXiv:2105.14782.
+
+\bibitem[Kawahara et~al.(2025)Kawahara, Kawashima, Tada, Ishikawa, Hosokawa,
+  Kasagi, Kotani, Masuda, Nugroho, Tamura, Yama, Kitzmann, Minesi, and
+  Morris]{kawahara2025}
+Hajime Kawahara, Yui Kawashima, Shotaro Tada, Hiroyuki~Tako Ishikawa,
+  Ko~Hosokawa, Yui Kasagi, Takayuki Kotani, Kento Masuda, Stevanus~K. Nugroho,
+  Motohide Tamura, Hibiki Yama, Daniel Kitzmann, Nicolas Minesi, and Brett~M.
+  Morris.
+\newblock Differentiable modeling of planet and substellar atmosphere:
+  high-resolution emission, transmission, and reflection spectroscopy with
+  {ExoJAX2}.
+\newblock \emph{The Astrophysical Journal}, 985:\penalty0 263, 2025.
+\newblock arXiv:2410.06900.
+
+\bibitem[Kuleshov et~al.(2018)Kuleshov, Fenner, and Ermon]{kuleshov2018}
+Volodymyr Kuleshov, Nathan Fenner, and Stefano Ermon.
+\newblock Accurate uncertainties for deep learning using calibrated regression.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, 2018.
+\newblock arXiv:1807.00263.
+
+\bibitem[Lakshminarayanan et~al.(2017)Lakshminarayanan, Pritzel, and
+  Blundell]{lakshminarayanan2017}
+Balaji Lakshminarayanan, Alexander Pritzel, and Charles Blundell.
+\newblock Simple and scalable predictive uncertainty estimation using deep
+  ensembles.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2017.
+\newblock arXiv:1612.01474.
+
+\bibitem[Lemos et~al.(2023)Lemos, Coogan, Hezaveh, and
+  Perreault-Levasseur]{lemos2023}
+Pablo Lemos, Adam Coogan, Yashar Hezaveh, and Laurence Perreault-Levasseur.
+\newblock Sampling-based accuracy testing of posterior estimators for general
+  inference.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, 2023.
+\newblock arXiv:2302.03026.
+
+\bibitem[Line et~al.(2015)Line, Teske, Burningham, Fortney, and
+  Marley]{line2015}
+Michael~R. Line, Johanna Teske, Ben Burningham, Jonathan~J. Fortney, and
+  Mark~S. Marley.
+\newblock Uniform atmospheric retrieval analysis of ultracool dwarfs. {I}.
+  characterizing benchmarks, {Gl 570D} and {HD 3651B}.
+\newblock \emph{The Astrophysical Journal}, 807:\penalty0 183, 2015.
+\newblock arXiv:1504.06670.
+
+\bibitem[M\'arquez-Neila et~al.(2018)M\'arquez-Neila, Fisher, Sznitman, and
+  Heng]{marquez2018}
+Pablo M\'arquez-Neila, Chloe Fisher, Raphael Sznitman, and Kevin Heng.
+\newblock Supervised machine learning for analysing spectra of exoplanetary
+  atmospheres.
+\newblock \emph{Nature Astronomy}, 2:\penalty0 719--724, 2018.
+\newblock arXiv:1806.03944.
+
+\bibitem[Niraula et~al.(2022)Niraula, de~Wit, Gordon, Hargreaves, Boone, and
+  Rey]{niraula2022}
+Prajwal Niraula, Julien de~Wit, Iouli~E. Gordon, Robert~J. Hargreaves,
+  Christopher Boone, and Michael Rey.
+\newblock The impending opacity challenge in exoplanet atmospheric
+  characterization.
+\newblock \emph{Nature Astronomy}, 6:\penalty0 1287--1295, 2022.
+\newblock \doi{10.1038/s41550-022-01773-1}.
+\newblock arXiv:2209.07464.
+
+\bibitem[Niraula et~al.(2023)Niraula, de~Wit, Gordon, Hargreaves, and
+  Sousa-Silva]{niraula2023}
+Prajwal Niraula, Julien de~Wit, Iouli~E. Gordon, Robert~J. Hargreaves, and
+  Clara Sousa-Silva.
+\newblock Origin and extent of the opacity challenge for atmospheric retrievals
+  of {WASP-39\,b}.
+\newblock \emph{The Astrophysical Journal Letters}, 950\penalty0 (2):\penalty0
+  L17, 2023.
+\newblock \doi{10.3847/2041-8213/acd6f8}.
+\newblock arXiv:2303.03383.
+
+\bibitem[Papamakarios and Murray(2016)]{papamakarios2016}
+George Papamakarios and Iain Murray.
+\newblock Fast $\varepsilon$-free inference of simulation models with
+  {Bayesian} conditional density estimation.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2016.
+\newblock arXiv:1605.06376.
+
+\bibitem[Papamakarios et~al.(2021)Papamakarios, Nalisnick, Rezende, Mohamed,
+  and Lakshminarayanan]{papamakarios2021}
+George Papamakarios, Eric Nalisnick, Danilo~Jimenez Rezende, Shakir Mohamed,
+  and Balaji Lakshminarayanan.
+\newblock Normalizing flows for probabilistic modeling and inference.
+\newblock \emph{Journal of Machine Learning Research}, 22\penalty0
+  (57):\penalty0 1--64, 2021.
+\newblock arXiv:1912.02762.
+
+\bibitem[Perrin and Hartmann(1989)]{perrin1989}
+M.~Y. Perrin and J.~M. Hartmann.
+\newblock Temperature-dependent measurements and modeling of absorption by
+  {CO}$_2$--{N}$_2$ mixtures in the far line-wings of the 4.3 $\mu$m {CO}$_2$
+  band.
+\newblock \emph{Journal of Quantitative Spectroscopy and Radiative Transfer},
+  42:\penalty0 311--327, 1989.
+
+\bibitem[Polyansky et~al.(2018)Polyansky, Kyuberis, Zobov, Tennyson, Yurchenko,
+  and Lodi]{polyansky2018}
+Oleg~L. Polyansky, Aleksandra~A. Kyuberis, Nikolai~F. Zobov, Jonathan Tennyson,
+  Sergei~N. Yurchenko, and Lorenzo Lodi.
+\newblock {ExoMol} molecular line lists {XXX}: a complete high-accuracy line
+  list for water ({POKAZATEL}).
+\newblock \emph{Monthly Notices of the Royal Astronomical Society},
+  480:\penalty0 2597--2608, 2018.
+
+\bibitem[Rocchetto et~al.(2016)Rocchetto, Waldmann, Venot, Lagage, and
+  Tinetti]{rocchetto2016}
+Marco Rocchetto, Ingo~P. Waldmann, Olivia Venot, Pierre-Olivier Lagage, and
+  Giovanna Tinetti.
+\newblock Exploring biases of atmospheric retrievals in simulated {JWST}
+  transmission spectra of hot {Jupiters}.
+\newblock \emph{The Astrophysical Journal}, 833:\penalty0 120, 2016.
+\newblock arXiv:1610.02848.
+
+\bibitem[Stock et~al.(2018)Stock, Kitzmann, Patzer, and Sedlmayr]{stock2018}
+Joachim~W. Stock, Daniel Kitzmann, A.~Beate~C. Patzer, and Erwin Sedlmayr.
+\newblock {FastChem}: a computer program for efficient complex chemical
+  equilibrium calculations in the neutral/ionized gas phase with applications
+  to stellar and planetary atmospheres.
+\newblock \emph{Monthly Notices of the Royal Astronomical Society},
+  479:\penalty0 865--874, 2018.
+
+\bibitem[Stock et~al.(2022)Stock, Kitzmann, and Patzer]{stock2022}
+Joachim~W. Stock, Daniel Kitzmann, and A.~Beate~C. Patzer.
+\newblock {FastChem} 2: an improved computer program to determine the gas-phase
+  chemical equilibrium composition for arbitrary element distributions.
+\newblock \emph{Monthly Notices of the Royal Astronomical Society},
+  517:\penalty0 4070--4080, 2022.
+
+\bibitem[Talts et~al.(2018)Talts, Betancourt, Simpson, Vehtari, and
+  Gelman]{talts2018}
+Sean Talts, Michael Betancourt, Daniel Simpson, Aki Vehtari, and Andrew Gelman.
+\newblock Validating {Bayesian} inference algorithms with simulation-based
+  calibration.
+\newblock \emph{arXiv preprint}, 2018.
+\newblock arXiv:1804.06788.
+
+\bibitem[Tobin et~al.(2017)Tobin, Fong, Ray, Schneider, Zaremba, and
+  Abbeel]{tobin2017}
+Joshua Tobin, Rachel Fong, Alex Ray, Jonas Schneider, Wojciech Zaremba, and
+  Pieter Abbeel.
+\newblock Domain randomization for transferring deep neural networks from
+  simulation to the real world.
+\newblock In \emph{IEEE/RSJ International Conference on Intelligent Robots and
+  Systems (IROS)}, 2017.
+\newblock arXiv:1703.06907.
+
+\bibitem[Vasist et~al.(2023)Vasist, Rozet, Absil, Molli\`ere, Nasedkin, and
+  Louppe]{vasist2023}
+Malavika Vasist, Fran\c{c}ois Rozet, Olivier Absil, Paul Molli\`ere, Evert
+  Nasedkin, and Gilles Louppe.
+\newblock Neural posterior estimation for exoplanetary atmospheric retrieval.
+\newblock \emph{Astronomy \& Astrophysics}, 672:\penalty0 A147, 2023.
+\newblock arXiv:2301.06575.
+
+\bibitem[Ward et~al.(2022)Ward, Cannon, Beaumont, Fasiolo, and
+  Schmon]{ward2022}
+Daniel Ward, Patrick Cannon, Mark Beaumont, Matteo Fasiolo, and Sebastian~M.
+  Schmon.
+\newblock Robust neural posterior estimation and statistical model criticism.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2022.
+\newblock arXiv:2210.06564.
+
+\bibitem[Yama et~al.(2026)Yama, Masuda, Kawashima, and Kawahara]{yama2026}
+Hibiki Yama, Kento Masuda, Yui Kawashima, and Hajime Kawahara.
+\newblock {ExoJAX} retrievals of {VLT/CRIRES} spectra of {Luhman 16AB}: {C/O}
+  ratios and systematic uncertainties.
+\newblock \emph{The Astrophysical Journal}, 997:\penalty0 118, 2026.
+\newblock \doi{10.3847/1538-4357/ae231d}.
+\newblock arXiv:2511.23018.
+
+\bibitem[Yurchenko et~al.(2024)Yurchenko, Owens, Kefala, and
+  Tennyson]{yurchenko2024}
+Sergei~N. Yurchenko, Alec Owens, Kyriaki Kefala, and Jonathan Tennyson.
+\newblock {ExoMol} line lists -- {LVII}. high accuracy ro-vibrational line list
+  for methane ({CH}$_4$).
+\newblock \emph{Monthly Notices of the Royal Astronomical Society},
+  528:\penalty0 3719--3729, 2024.
+
+\end{thebibliography}

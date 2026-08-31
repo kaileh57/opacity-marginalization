@@ -1,0 +1,777 @@
+% ML4PS @ NeurIPS 2026 -- extended abstract (4 pp main text + references)
+% Requires the NeurIPS style file, shipped here as neurips_2026.sty.
+% Compile: pdflatex main && bibtex main && pdflatex main && pdflatex main
+\documentclass{article}
+
+\usepackage[final]{neurips_2026}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\hypersetup{hidelinks}  % keep links live but suppress the coloured boxes
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{siunitx}
+\usepackage{placeins}   % \FloatBarrier -- keep floats out of the bibliography
+\usepackage{flafter}    % a float never appears before its first callout
+
+% The two trailing appendix figures land on a float-only page; without this,
+% LaTeX spreads them with a large gap in the middle. Pin them to the top.
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{22pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother
+
+% Let a tall float share a page with text instead of claiming a float-only page,
+% so the appendix does not strand a single figure on a mostly blank page.
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.06}
+\renewcommand{\floatpagefraction}{0.80}
+
+% ML4PS uses the NeurIPS style but its own footer string (workshop, non-archival).
+% The shipped .sty hard-codes a conference notice; retarget it to the workshop
+% without inventing a conference ordinal.
+\makeatletter
+\renewcommand{\@noticestring}{%
+  Machine Learning and the Physical Sciences Workshop, NeurIPS 2026.%
+}
+\makeatother
+
+\title{Amortized Opacity Marginalization Improves C/O\\
+Interval Calibration for Brown-Dwarf Retrievals}
+
+\author{%
+  Kellen Heraty \\
+  sculptorai.org \\
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Molecular line lists disagree at a level that measurably shifts retrieved C/O,
+so retrievals conditioned on a single list omit a dominant systematic from their
+error bars. Classical marginalization re-runs a full retrieval under $K$ opacity
+realizations per object. We move that cost into simulation: while generating the
+training set we randomize opacities (smooth multiplicative Fourier fields in
+$\log\nu$ plus a discrete line-list mixture, under a deliberately broad prior
+informed by measured inter-list differences), so a neural posterior estimator
+learns an already-marginalized posterior. Conceptually, this is the amortized
+analogue of repeating a conventional retrieval under many plausible opacity
+realizations and averaging the resulting posteriors. On perturbed held-out spectra
+($n=2048$) a standard NPE covers nominal 90\% C/O intervals 43.3\% of the time
+against 82.4\% for a compute-matched marginalized network; three-seed control
+ensembles reach 93.2\%
+on clean data but 61.4\% under perturbation, against 89.4\% marginalized,
+isolating the deficit as opacity-induced (TARP joint expected-coverage deviation
+0.005 against 0.035). An axis ablation traces the gain to the continuous field
+(45.4\% for the discrete swaps alone, 79.3\% for the field alone). Applying the
+105 real bad-pixel masks with median
+filling then collapsed the ensemble's C/O coverage from 0.901 to 0.479;
+retraining on the same mask distribution and pooling three such seeds returns a
+nominal 0.905 C/O and 0.891 overall under the full deployment path, still in
+simulation ($n=1024$, same 105 masks), at 0.21 to 0.31 of the prior width. On 105 JWST/G395H spectral products of 13
+late-T/Y dwarfs, single marginalized networks bracket the Hood et al.\ (2024) T8
+benchmark C/O where the control excludes it, a consistency check rather than a validation, at $\approx$1.6--2.6$\times$
+wider intervals.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+Atmospheric retrieval infers composition (for instance the carbon-to-oxygen
+ratio C/O) and thermal structure from a spectrum by comparing it to a radiative
+forward model whose molecular opacities come from line lists
+(HITEMP, ExoMol, and others) that disagree: in the ExoJAX retrievals of
+VLT/CRIRES spectra of Luhman\,16AB by \citet{yama2026}, line-list choice is the
+dominant systematic on C/O at the $\sim$7\% level. It joins a long line of retrieval systematics: broadening choices
+\citep{gharibnezhad2019}, temperature-profile parameterization
+\citep{rocchetto2016}, inter-code differences \citep{barstow2020}.
+Error-inflation devices, a fitted ``$10^{b}$'' flux
+jitter \citep{line2015} or a Gaussian-process noise term, absorb some unmodeled
+variance, but they inflate a smooth, parameter-independent noise budget and
+cannot restore per-parameter calibration against a structured, parameter-coupled
+opacity error. The principled remedy, marginalizing over
+line-list choice, classically propagates opacity uncertainty through $K$
+complete retrievals per object, as \citet{niraula2022,niraula2023} did for
+transmission spectra: correct, but expensive and repeated per target.
+
+\paragraph{Contribution.}
+We amortize opacity marginalization. Instead of $K$ retrievals per object we pay
+once, in simulation, by randomizing opacities while generating the training set
+for a neural posterior estimator (NPE)
+\citep{papamakarios2016,greenberg2019,cranmer2020}, so the resulting posterior is
+marginalized over the specified line-list-uncertainty prior by construction and
+evaluates in a single amortized forward pass. This is, to our knowledge, the
+first controlled calibration-\emph{width} study for brown-dwarf emission
+retrieval under line-list uncertainty, against un-marginalized and
+recalibrated-control baselines. Classical marginalization is
+tractable; the contribution is its cost structure and calibration. The aim is not
+tighter constraints. It is a quoted uncertainty that remains meaningful when the
+opacity model is uncertain. All claims
+are conditional on the prior of \S\ref{sec:method} and scoped to central-interval
+C/O coverage (\S\ref{sec:limits}).
+
+\paragraph{Related work.}
+Simulation-based inference with normalizing flows
+\citep{papamakarios2021,cranmer2020} underlies neural retrieval, and NPE has
+been applied to exoplanet spectra with opacities held fixed
+\citep{marquez2018,vasist2023}. A parallel literature shows amortized posteriors are
+frequently \emph{overconfident} unless controlled \citep{hermans2022,%
+delaunoy2022}, and develops misspecification-aware NPE
+\citep{ward2022,cannon2022}, deep ensembling \citep{lakshminarayanan2017}, and
+coverage diagnostics beyond marginal simulation-based calibration (SBC), notably
+TARP \citep{lemos2023,talts2018}. We combine these threads: opacity randomized inside the simulator after
+\citet{tobin2017}, and ensembling against seed-level under-dispersion.
+
+\section{Method}
+\label{sec:method}
+
+\paragraph{Forward model.}
+We use the ExoJAX-based \citep{kawahara2022,kawahara2025} SCULPTOR forward model for
+brown-dwarf emission over JWST/NIRSpec G395H ($1850$--$3550$\,\si{\per\cm},
+$\approx$2.8--5.4\,\si{\micro\meter}), with 15 retrieved parameters: C/O,
+metallicity [M/H], a five-knot temperature profile ($T_1$--$T_5$), radius, gravity
+$\log_{10}(g/\mathrm{cm\,s^{-2}})$, vertical mixing
+$\log_{10}(k_{zz}/\mathrm{cm^{2}\,s^{-1}})$, a two-parameter
+($f_{\mathrm{sed}},\sigma_c$) sedimentation cloud after \citet{ackerman2001} in
+its grey, geometric-optics limit, and radial/rotational/calibration nuisances
+(ranges and abundance recipe in Appendix~\ref{app:repro}). \emph{C/O is the
+elemental carbon-to-oxygen number ratio input to equilibrium chemistry}
+(pyFastChem, \citealt{stock2018,stock2022}; \citealt{asplund2009} solar scale,
+``scale-C''), post-processed with CO/NH$_3$ quenching set by $k_{zz}$. With no
+explicit oxygen-condensation correction it is a bulk elemental ratio, not a
+gas-phase-after-rain-out value.
+
+\paragraph{Perturbation model.}
+For each simulated spectrum we perturb the opacity of every major species by a
+smooth multiplicative field,
+$\kappa(\nu)\!\to\!\kappa(\nu)\exp\!\big(c_0+\sum_{m=1}^{4}
+[a_m\cos(2\pi m u)+b_m\sin(2\pi m u)]\big)$, a 4-mode Fourier expansion in
+normalized $\log$-wavenumber $u$, \emph{and} we draw the discrete line list from
+a mixture. The nine coefficients per species are drawn from zero-mean Gaussians
+with per-species, per-mode standard deviations (Table~\ref{tab:opamp}),
+independently across species and draws. All six G395H species carry the continuous field, so all four C- and O-bearing
+carriers of C/O are perturbed; the discrete swap is available only for H$_2$O (POKAZATEL,
+\citealt{polyansky2018}, against HITEMP) and CH$_4$ (HITEMP,
+\citealt{hargreaves2020}, against ExoMol-MM, \citealt{yurchenko2024}), whose four
+combinations cycle uniformly over shards. The Fourier field is not intended as a
+literal physical model of line-list errors. It provides a continuous family of
+plausible opacity distortions rather than only a few fixed opacity tables that the
+network may memorize, the distinction the one-axis ablation of
+\S\ref{sec:results}(h) isolates. Amplitudes come from
+HITEMP-vs-ExoMol cross-section ratio spectra measured over a photospheric
+$(T,P)$ grid and sit above those discrepancies (Appendix~\ref{app:repro}):
+over-dispersion costs width, under-dispersion costs coverage, and we choose
+width. Two caveats. The prior is a \emph{modeling
+choice informed by}
+measurements, since \citet{yama2026} measure a C/O \emph{shift}, not a
+fractional opacity error. Swap and field also derive from the same inter-list
+differences, so they partly double-count; we read the field as within-list
+structural error, the band-strength and line-shape residuals four fixed swap
+realizations cannot express. The amplitude sweep scales only the field.
+
+\paragraph{Datasets and NPE.}
+On a TPU v4-64 we generated two matched 1M-spectrum sets (7{,}813 shards each),
+perturbed and clean, identical otherwise. The NPE is a bounded neural spline flow
+with a 1D-CNN embedding, trained with best-validation checkpointing
+(Appendix~\ref{app:repro}); the marginalized model is trained on perturbed data
+(three seeds), the control on clean data, with identical architecture and flags.
+Opacity coefficients are recorded but dropped from the label set
+\citep{alsing2019}.
+
+\section{Results}
+\label{sec:results}
+
+All coverages are marginal central-interval coverages, the fraction of held-out
+truths inside the posterior central interval at the stated level; ``overall'' is
+the unweighted mean over the 15 parameters, \emph{not} simultaneous coverage (protocols in Appendix~\ref{app:repro}).
+
+\paragraph{(a) Coverage under perturbation, and scaling.}
+The key controlled comparison uses three-seed ensembles with identical
+architecture, training budget and pooling: the control ensemble covers C/O at
+$0.932$ on a clean held-out set ($n=512$) but $0.614$ on the perturbed
+factorial split ($n=2048$), where the marginalized ensemble reaches $0.894$.
+The deficit is opacity-induced, not an ensembling effect, and marginalization
+removes most of it.
+Table~\ref{tab:coverage} repeats it at single-network scale ($0.433$ against
+$0.824$), all gaps tens of binomial standard errors. In other words, when the
+fixed-opacity network is applied to spectra affected by opacity uncertainty, an
+interval labeled as 90\% contains the true C/O less than half the time. A single
+control network reaches only $0.62$ even on clean data, so part of that advantage
+is generic augmentation. Nor is it averaging over broken regimes: raw C/O coverage holds in every $T_4$
+and SNR quintile where the control's collapses (Appendix~\ref{app:repro}). From 800 to 3{,}000 training shards the
+control's C/O coverage \emph{drops} $0.57\to0.47$ ($n=512$ perturbed
+protocol): more data sharpens the posterior
+around a misspecified forward model instead of correcting it.
+
+\paragraph{(b) The three-seed ensemble reaches near-nominal coverage.}
+A single marginalized network plateaus in overall coverage near 0.83, matching
+the flow under-dispersion ensembling corrects \citep[cf.][]{hermans2022};
+pooling one, two, three seeds gives C/O $0.844$, $0.842$, $0.893$, so seed-
+count saturation is untested. Joint
+calibration, measured by TARP \citep{lemos2023}, is about sevenfold tighter
+for the ensemble: maximum expected-coverage deviation $0.0049$ (bootstrap 95\%
+$[0.0025,0.0144]$) against $0.0348$ for the control (Fig.~\ref{fig:sbc}). SBC still finds residual
+miscalibration: pooling the probability-integral-transform (PIT) values of all 15 parameters
+($30{,}720$) the ensemble rejects uniformity
+($\chi^2_{\mathrm{pooled}}=116.2$, 19 dof, $p<10^{-14}$), and the C/O histogram is
+worse than the pool ($\chi^2_{\mathrm{C/O}}=146$, rank mean $0.427$;
+Fig.~\ref{fig:sbc}), a location or shape bias that central coverage does not
+reveal, so we do not claim full joint calibration.
+
+\paragraph{(c) Recalibration is not a substitute.}
+A cheaper baseline leaves opacities fixed and recalibrates the control post hoc
+with the per-parameter monotone PIT-CDF map of \citet{kuleshov2018}, fit on a disjoint calibration half; being
+asymmetric it
+corrects dispersion \emph{and} location, a stronger baseline than width
+inflation. On the leakage-free split (2{,}048 calibration and 2{,}048 test
+objects, frozen maps), C/O coverage at nominal 0.90 goes
+$0.433/0.705/0.824/0.881$ for raw control, recalibrated control, raw
+marginalized and recalibrated marginalized, aggregate coverage $0.747/0.869/0.831/0.894$:
+recalibration recovers \emph{aggregate} coverage but not C/O, since a frozen
+marginal map cannot fix a per-object conditional bias (quintiles in
+Appendix~\ref{app:repro}). In the $2\times2$ ensemble
+factorial the strongest control stack
+(recalibrated control ensemble, 0.830 at width/prior 0.20) is beaten on both
+counts by the \emph{raw} marginalized ensemble (0.894 at 0.17), and
+recalibrating both sides keeps the advantage (paired bootstrap
+$\Delta$coverage $+0.058$ at $\Delta$width $-0.048$;
+Appendix~\ref{app:repro}), though
+it slightly lowers the near-calibrated ensemble
+($0.894\to0.879$). This rules out this recalibrator, not every post-hoc scheme.
+
+\paragraph{(d,e) Prior amplitude and held-out discrete cache.}
+Coverage falls monotonically as the prior is misspecified, from 0.94 at
+$0.43\times$ the trained amplitude to 0.75 at $2.14\times$, so the claim does
+not extend to $2\times$. A model retrained with the CH$_4$-ExoMol cache withheld
+covers never-seen shards from it as well as matched in-cache data (0.821 against 0.790), a stability result on a test that is not family-blind,
+only the discrete cache being withheld (Appendix~\ref{app:repro}).
+
+\paragraph{(f) Deployment preprocessing breaks calibration; mask-augmented
+ensembling repairs it.}
+Our deployment path masks bad pixels and median-fills; applying the 105 real
+G395H masks (median good-pixel fraction 0.468) to simulated held-out spectra
+collapsed the three-seed marginalized ensemble's C/O coverage from 0.901 to
+0.479 (control 0.457 to 0.329); the full path (masking plus scalar re-noising)
+gave 0.480 while re-noising alone was harmless at 0.897, so masking accounts for it, by
+information loss (Appendix~\ref{app:repro}). Retraining on the same mask distribution recovers
+most of it. One mask-augmented network covers C/O at 0.866 under real-mask
+filling and 0.843 under the full path, against 0.398 and 0.438 for its matched
+un-augmented seed (Fig.~\ref{fig:deploy}); pooling three such seeds reaches
+0.916 and 0.905, with overall coverage 0.903 and 0.891 and unmasked coverage
+intact at 0.933 (Table~\ref{tab:stress}). Ensembling supplies the last 6 points,
+though the single and pooled figures come from separately drawn sets
+(Appendix~\ref{app:repro}). Pooling also costs width, the
+ensemble's median 90\% C/O interval going from 0.209 of the prior width unmasked
+to 0.311 under the full path. The stress set is simulated and the same 105 masks
+serve augmentation and evaluation, so unseen mask geometries are untested.
+
+\paragraph{(g) Illustrative application to real JWST data.}
+The sample is 105 JWST/NIRSpec G395H (F290LP) spectral products
+of 13 late-T/Y dwarfs (15 program-observation IDs; Fig.~\ref{fig:real}), so
+population statements are read at the spectrum level. Per-spectrum SNR ranges
+$\approx0.7$--$107$ against a training prior of $[10,200]$, so summaries are
+read on the 58 in-support spectra (SNR$\ge10$), where the marginalized seed
+constrains C/O below the prior width everywhere at width/prior
+$\approx0.33$ against $\approx0.21$ for the control. Seed variance is real (pairwise median $|\Delta\mathrm{C/O}|=0.19$), so the
+ensemble is the recommended deployment. Posterior-predictive
+residuals exceed the marginalized envelope for 58 of the 94 scoreable spectra,
+so (f) is not the only deployment failure. On the
+T8 benchmark (2MASS J04151954$-$0935066; \citealt{hood2024} report C/O
+$=0.53\pm0.01$, a \emph{statistical} bar only), the marginalized intervals sit
+closer to $0.53$ than the control's at every level, though the containment
+labels of Table~\ref{tab:real} turn on hairline margins, so the table orders the
+methods only weakly. The recommended deployment, the three mask-augmented seeds of (f) pooled, gives
+a T8 C/O of $0.587$ containing $0.53$ at both levels, so the picture does not rest
+on the un-augmented checkpoints, and hardening for deployment widens the
+in-support intervals (Appendix~\ref{app:repro}).
+Hood's convention is commensurate with ours, but chemistry, wavelength
+coverage and forward model still differ, which keeps this a consistency check
+(Appendix~\ref{app:repro}).
+
+\paragraph{(h) The continuous field carries most of the calibration benefit.}
+Two networks matched to marginalized seed 0 in seed, schedule and shard count
+vary one perturbation axis (Table~\ref{tab:ablation}). Trained on the
+discrete swaps alone, a network is no better calibrated than the fixed-opacity
+control ($0.454$ raw against $0.433$).
+Trained on the field alone it reaches $0.793$, close to the
+$0.825$ of the full mixture. Both axes still bite: on spectra perturbed one axis
+at a time the control covers C/O at $0.614$ and $0.472$ against $0.433$ when
+both act, while the marginalized ensemble, not retrained, holds $0.963$ and
+$0.910$.
+
+\FloatBarrier
+\section{Limitations}
+\label{sec:limits}
+
+All results are conditional on the prior of \S\ref{sec:method}, whose two
+caveats carry over, and the fields are $T/P$-independent whereas real line-list
+error is not. Coverage is marginal and PIT uniformity is still rejected (b), so
+we scope the claim to central C/O intervals. Simulator failures induce a parameter-dependent acceptance function,
+especially in C/O, so calibration is conditional on successful generation, not
+on the nominal prior.
+Mask augmentation is scored on the same 105 masks it trains on, the control
+and recalibrated real-data rows still use un-augmented models, and real-data
+preprocessing stays coarse. Marginalization costs
+$\approx$1.6--2.6$\times$ wider intervals, and posterior fidelity against a
+classical NUTS retrieval is not tested. No line-shape lever we tried (LSF nulls, broadening rescalings, $\chi$-factor
+CO$_2$ line mixing, \citealt{perrin1989}) recovered the $\sim$7\% floor, which
+is why we marginalize over it.
+The Fourier field also stands in for an error with a measurable origin: the
+three CO configurations of \citet{yama2026} differ only in pressure broadening,
+and their $\sim$7\% C/O spread is almost entirely air- against H$_2$-broadened
+HITEMP. Perturbing the saved opacity
+grids at that scale (half-widths $\times1.30$, temperature exponents $-0.15$,
+all six species) leaves the marginalized
+ensemble's C/O coverage at $0.901$ against $0.910$ on the matched reference set,
+inside the $0.014$ binomial standard error. Overall coverage falls
+$0.906\to0.858$, driven by the temperature knots, worst at $T_3$ and next at
+$T_2$, with $\log g$ behind them; widths move by at most 7\%, so the mismatch
+displaces the posterior rather than shrinking it (Table~\ref{tab:stress}). At this amplitude and sign, composition survives a misspecification the prior
+never contained and thermal structure does not, though the C/O interval spans
+$0.18$ of the prior width, so some of that survival is margin rather than generalization. We read the
+damage as landing on the parameters setting photospheric pressure and hence
+line width, a mechanism this test does not isolate and a broadening prior anchored in the
+laboratory bounds of \citet{hosokawa2025} would target
+(Appendix~\ref{app:repro}).
+
+\FloatBarrier
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\section*{Data, code and acknowledgments}
+Datasets, weights, priors, result JSONs and code will be released on the Hugging
+Face Hub on acceptance. Supported with Cloud TPUs from Google's TRC.
+
+\appendix
+\section{Reproducibility}
+\label{app:repro}
+
+\textbf{Parameters and priors (uniform).} $T_1\!\in\![150,1500]$,
+$T_2\!\in\![200,2000]$, $T_3\!\in\![300,2500]$, $T_4\!\in\![500,3000]$,
+$T_5\!\in\![800,3500]$\,K (temperature knots at
+$\log_{10}(P/\mathrm{bar})=-5,-3,-1,1,3$); [M/H]\,$\in[-1,1.5]$\,dex;
+C/O\,$\in[0.1,1.5]$; $\log_{10}(k_{zz}/\mathrm{cm^{2}\,s^{-1}})\!\in\![6,10]$;
+$\log_{10}(g/\mathrm{cm\,s^{-2}})\!\in\![3,5.5]$;
+$R\!\in\![0.5,2]\,R_{\mathrm{Jup}}$; $f_{\mathrm{sed}}\!\in\![0.5,8]$; cloud
+$\sigma_c\!\in\![1.2,2.5]$; $v_r\!\in\![-100,100]$,
+$v\sin i\!\in\![0,30]$\,\si{\km\per\s}; $\sigma_{\mathrm{cal}}\!\in\![0,0.05]$;
+SNR conditioning $\in[10,200]$. \textbf{Abundance recipe.} Every element heavier
+than helium is first scaled by $10^{[\mathrm{M/H}]}$; oxygen then remains at that
+metallicity-scaled solar abundance and carbon is set to C/O times that oxygen
+abundance.
+
+\textbf{Recalibration map (\S\ref{sec:results}(c)).} The level-$p$ quantile
+becomes the posterior sample-quantile at $R^{-1}(p)$, with $R$ the empirical PIT
+CDF on the calibration half. Recalibrating both sides of the ensemble factorial
+leaves the marginalized advantage at paired-bootstrap $\Delta$coverage $+0.058$,
+$95\%$ $[0.041,0.076]$, at $\Delta$width $-0.048$, $[-0.064,-0.024]$.
+
+\textbf{Regime breakdowns (\S\ref{sec:results}(a,c)).} In quintiles of the deep
+temperature knot $T_4$ and of SNR the marginalized ensemble's raw C/O coverage
+stays at 0.854--0.915 in every bin, against 0.384--0.468 for the control and
+0.667--0.749 for the recalibrated control, so the frozen marginal map does not
+fix the per-object conditional bias in any regime. Of the 15 parameters, 6 fail
+a Bonferroni-corrected Kolmogorov--Smirnov test of PIT uniformity for the
+ensemble (\S\ref{sec:results}(b)).
+
+\textbf{Real-sample caveats (\S\ref{sec:results}(g)).} Seed variance across the
+105 spectra breaks down into a within-program-observation-ID scatter of 0.157
+and an across-ID scatter of 0.168, so repeatability is quoted at the
+program-observation level; the physical identity of the two jw01189
+re-observations cannot be established from the data on disk, and merging them
+could only raise the within-group figure. Line-list error is a shared
+systematic, so the 105 products are not independent realizations of it and a
+population analysis would need it as a shared latent. The Luhman\,16AB C/O of
+\citet{yama2026} sits on a third convention, a gas-phase CO-to-H$_2$O
+mixing-ratio quantity where ours is an elemental input. \citet{hood2024}, by
+contrast, scale their retrieved oxygen by $1.3$ for silicate sequestration, so
+their $0.53$ is already commensurate with our bulk elemental ratio. Over the 58
+in-support spectra the mask-augmented three-seed ensemble's median $90\%$ C/O
+interval is $0.48$ of the prior width, against $0.41$ for the single
+mask-augmented seed, whose T8 median is $0.493$.
+
+\textbf{Mask-collapse control (\S\ref{sec:results}(f)).} Recomputing the
+per-spectrum normalization from good pixels only and zero-filling recovers just
+3\% of the mask collapse ($0.478\to0.491$ against 0.895), so the failure is
+information loss, not a normalization artifact.
+
+\textbf{Mask-augmented ensemble (\S\ref{sec:results}(f)).} Three networks were
+trained from seeds 0, 1 and 2 on the perturbed set with mask augmentation, then
+pooled and run through the four preprocessing variants of
+Table~\ref{tab:stress} on $1{,}024$ perturbed held-out objects. The
+un-augmented single network in that table is marginalized seed 0 evaluated on
+the same objects in the same invocation. The un-augmented seed common to the
+single-network and the pooled evaluations differs by $0.020$ across the two sets,
+$0.9$ standard errors, against a $+0.062$ ensemble gain at $4.3$. On the unmasked variant the ensemble
+returns C/O $0.933$ and overall $0.906$, against the $0.894$ and $0.902$ of the
+un-augmented ensemble on the $n=2048$ split, so clean coverage survives
+augmentation and runs $3.3$ points \emph{over} nominal rather than at it. The
+width cost is real. At matched seed and matched set the mask-augmented network's
+median $90\%$ C/O interval is $1.33\times$ the un-augmented one's ($0.184$
+against $0.138$ of the prior width), and the mask-augmented ensemble sits at
+$0.209$ against the $0.168$ of the un-augmented marginalized ensemble in
+Table~\ref{tab:coverage}.
+
+\textbf{Broadening stress (\S\ref{sec:limits}).} Every line's Lorentz half-width
+in PreMODIT follows
+$\mathrm{ngamma}(T,P)=\mathrm{ngamma}_{\mathrm{ref}}[i]\,
+(T/T_{\mathrm{ref}})^{-n_{T}[j]}P$ from two lookup grids, so scaling
+$\mathrm{ngamma}_{\mathrm{ref}}$ by $1.30$ and shifting $n_{T}$ by $-0.15$ on
+the saved operator reproduces a rebuild from a line list whose
+$\gamma_{\mathrm{air}}$ or $\alpha_{\mathrm{ref}}$ were scaled and whose
+$n_{\mathrm{air}}$ or $n_{T}$ were shifted, grid quantization included. The perturbation covers all
+six molecular operators and both alternative line-list caches, so the discrete
+axis is untouched. The amplitude is the literature air-versus-H$_2$ separation:
+H$_2$-broadened CO$_2$ widths run about $1.2$--$1.4\times$ air and the
+temperature exponents differ by $0.1$--$0.3$. The reference set is the
+smooth-field-only set of \S\ref{sec:results}(h)
+(\texttt{SCULPTOR\_FORCE\_COMBO=0}), which is why its reference C/O coverage is
+$0.910$ and reproduces the lower block of Table~\ref{tab:ablation}. Reference
+and broadened sets share seed $413612$, 512 spectra, 8 shards and a
+bit-identical 71-column parameter table, so the comparison varies one axis; the
+survivor counts still differ ($434$ against $444$) because the finite-spectrum
+filter is not perfectly matched across the two, the broadened spectra failing it
+on a slightly different subset. In the self-normalized input space the
+network sees, the per-object rms response over the 433 objects present in both
+sets has median $0.0125$, p90 $0.107$ and max $0.59$. Per-parameter posterior width ratios run $0.93$--$1.00$, and clouds, radius,
+$\log k_{zz}$ and the radial-velocity nuisance move by $-0.002$ to $+0.004$ in
+coverage. Randomizing broadening coefficients within laboratory bounds such as
+those of \citet{hosokawa2025} (CH$_4$ in H$_2$/He to $1000$\,K, $5$--$45\%$
+below ExoMol at $296$\,K) would anchor that prior in physics, though one
+species over one band leaves most of G395H to extrapolation.
+
+\textbf{Evaluation protocols (\S\ref{sec:results}).} The primary table and
+SBC/TARP use the $n=2048$ leakage-free factorial split (binomial uncertainty
+$\approx0.007$ at nominal $0.90$; TARP 50 reference points); the clean held-out,
+seed-saturation and $800$-vs-$3{,}000$-shard pilots use $n=512$; the amplitude
+sweep $n\!\approx\!450$; the held-out-cache and deployment-stress sets $n=1024$.
+Proportion intervals are Wilson.
+
+\textbf{One-axis ablation (\S\ref{sec:results}(h)).} Two training sets of
+$2{,}338$ shards each were generated with one axis active. In
+\texttt{discrete\_only} the line-list combination still cycles as
+$\mathrm{shard}\bmod4$ while every continuous-field $\sigma$ of
+Table~\ref{tab:opamp} is set to zero, so the multiplicative field is the identity
+bit for bit; in \texttt{smooth\_only} the field runs at production amplitude and
+every shard is pinned to the base combination. One network was trained on each
+with the seed, schedule and architecture of marginalized seed 0. Two matched
+$512$-object test sets (fresh seed $413612$) were generated the same way and
+supply the lower block of Table~\ref{tab:ablation}; $438$ and $434$ spectra
+survive the finite-pixel filter.
+
+\textbf{Amplitude sweep and held-out cache (\S\ref{sec:results}(d,e)).} The
+sweep uses a fresh seed 314159 and rescales only the continuous field
+($n\!\approx\!450$ per cell). At $0.43\times$, $1\times$ (trained), $1.43\times$
+and $2.14\times$ the marginalized ensemble covers C/O at 0.94, 0.92, 0.86, 0.75;
+a single marginalized seed at 0.90, 0.86, 0.79, 0.70; the control at 0.55, 0.46,
+0.40, 0.34. Wilson 95\% intervals on the two misspecified ensemble cells are
+$[0.821,0.886]$ at $1.43\times$ and $[0.711,0.790]$ at $2.14\times$. The
+held-out-cache model (trained without CH$_4$-ExoMol) reaches C/O 0.821
+out-of-cache against 0.790 in-cache, overall 0.833 against 0.832, $n=1024$ per
+set.
+
+\textbf{Opacity-perturbation amplitudes.} The continuous multiplicative field is
+a 4-mode Fourier expansion in $\log\nu$ with zero-mean Gaussian coefficients
+drawn independently per species, per mode and per spectrum;
+Table~\ref{tab:opamp} lists the per-species standard deviations of the constant
+coefficient ($\sigma_{\mathrm{const}}$) and the four modes
+($\sigma_{m},\,m=1$--$4$), in natural-log units. Amplitudes come from the
+measured HITEMP-vs-ExoMol inter-list ratio spectra over a $(T,P)$ grid
+($T=400$--$1500$\,K, $P=0.1$--$30$\,bar). For CH$_4$ the measured smooth
+band-RMS is $\approx3.4\%$ (median over the grid) with a $\approx10.7\%$
+residual after the smooth fit, and H$_2$O is smaller; the priors are set well
+above those values, deliberately over-dispersed, so the tabulated CH$_4$
+$\sigma$ correspond to a pointwise log-opacity standard deviation near $0.4$
+rather than to the measured percentages. CO, NH$_3$ and H$_2$S have no second
+cache and inherit the mean of the two measured species; CO$_2$ is inflated to
+$1.5\times$ the largest measured single-species amplitude as a stand-in for its
+dominant line-shape-like residual. CO is perturbed only through the continuous
+field. Its inherited $\sigma$ is broader in pointwise amplitude than the
+measured H$_2$O and CH$_4$ inter-list differences, but this does not guarantee
+coverage of CO-specific structured errors. A second discrete CO cache is
+therefore an important extension, given the CO-configuration sensitivity
+reported by \citet{yama2026}. The amplitude sweep
+(\S\ref{sec:results}) rescales these continuous-field $\sigma$ by a single
+factor (reference $=1\times$) while retaining the discrete mixture.
+
+\begin{table}[h]
+\centering
+\caption{C/O central-interval coverage on the $2{,}048$-object leakage-free
+factorial test split (split seed $20260716$), plus the overall (15-parameter
+mean) at nominal $0.90$. ``control''/``marg s0'' are single networks;
+``ctrl-ens.''/``marg 3-seed ens.'' pool three seeds, so the single-network and
+ensemble columns are the two compute-matched comparisons. Binomial SE at nominal
+$0.90$ is $\approx0.007$; ``width/prior'' is the median $90\%$ C/O interval
+width over the prior width ($1.4$).}
+\label{tab:coverage}
+\begin{tabular}{lcccc}
+\toprule
+Nominal (C/O) & control s0 & ctrl-ens. & marg s0 & \textbf{marg 3-seed ens.} \\
+\midrule
+0.50 & 0.195 & 0.342 & 0.442 & \textbf{0.513} \\
+0.68 & 0.284 & 0.448 & 0.599 & \textbf{0.695} \\
+0.90 & 0.433 & 0.614 & 0.824 & \textbf{0.894} \\
+0.95 & 0.504 & 0.680 & 0.884 & \textbf{0.934} \\
+\midrule
+Overall @0.90     & 0.747 & 0.845 & 0.831 & \textbf{0.902} \\
+Width/prior @0.90 & 0.055 & 0.081 & 0.142 & \textbf{0.168} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{One-axis ablation, C/O central-interval coverage at nominal $0.90$.
+Upper block: three single networks that differ only in which axis their training
+data varied, evaluated on the $2{,}048$-object test half of the same
+leakage-free perturbed split as Table~\ref{tab:coverage}, raw and after the
+frozen recalibration map of \S\ref{sec:results}(c) fit on the matched
+$2{,}048$-object calibration half. The three arms are matched at $2{,}338$
+training shards, seed 0 and 60 epochs (the production models of
+Table~\ref{tab:coverage} use $3{,}000$ shards; the arms need only match each
+other), and the marginalized seed-0 row is the Table~\ref{tab:coverage} network
+re-drawn in this evaluation, hence $0.825$ here against $0.824$ there. Lower
+block: the production fixed-opacity control and the three-seed marginalized
+ensemble, neither retrained, on held-out sets perturbed along one axis only
+($438$ discrete-only and $434$ smooth-only spectra; binomial SE
+$\approx0.014$).}
+\label{tab:ablation}
+\begin{tabular}{lcc}
+\toprule
+\multicolumn{3}{l}{\emph{Training axis} ($n=2{,}048$ test)} \\
+Trained on & raw & recalibrated \\
+\midrule
+discrete swap only        & 0.454 & 0.746 \\
+smooth field only         & 0.793 & 0.873 \\
+both (marg.\ seed 0)      & \textbf{0.825} & \textbf{0.877} \\
+\midrule
+\multicolumn{3}{l}{\emph{Test axis} (raw, no retraining)} \\
+Perturbed spectra & fixed-opacity control & marg.\ 3-seed ens. \\
+\midrule
+discrete only ($n=438$)   & 0.614 & \textbf{0.963} \\
+smooth only ($n=434$)     & 0.472 & \textbf{0.910} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{The two stress tests, C/O central-interval coverage at nominal $0.90$
+unless a row says otherwise. Upper block: the deployment path of
+\S\ref{sec:results}(f) on $1{,}024$ perturbed held-out objects (binomial SE
+$\approx0.009$). ``un-aug.\ s0'' is marginalized seed 0 \emph{without} mask
+augmentation, not the fixed-opacity control of Table~\ref{tab:coverage}. The
+mask-augmented single network was scored on a separately
+drawn $1{,}024$-object set, on which the un-augmented seed gives
+$0.836/0.398/0.819/0.438$, so that column is matched to its own set rather than
+to this one. ``width/prior'' is the median $90\%$ C/O interval over the prior
+width ($1.4$); bold marks the recommended deployment column, and the lower
+block, having no recommended column, is unbolded. Lower block: the broadening
+perturbation of
+\S\ref{sec:limits} applied to the marginalized three-seed ensemble, which is not
+retrained ($434$ reference and $444$ broadened spectra; binomial SE
+$\approx0.014$).}
+\label{tab:stress}
+\begin{tabular}{lccc}
+\toprule
+\multicolumn{4}{l}{\emph{Deployment stress} ($n=1{,}024$, 105 real masks)} \\
+Preprocessing & un-aug.\ s0 & mask-aug.\ s0 & \textbf{mask-aug.\ 3-seed ens.} \\
+\midrule
+none (unmasked)          & 0.834 & 0.888 & \textbf{0.933} \\
+real-mask median fill    & 0.405 & 0.866 & \textbf{0.916} \\
+scalar re-noise only     & 0.823 & 0.872 & \textbf{0.932} \\
+full path                & 0.418 & 0.843 & \textbf{0.905} \\
+\midrule
+Overall @0.90, full path & 0.675 & 0.852 & \textbf{0.891} \\
+Width/prior, unmasked    & 0.138 & 0.184 & 0.209 \\
+Width/prior, full path   & 0.220 & 0.280 & 0.311 \\
+\midrule
+\multicolumn{4}{l}{\emph{Broadening stress} ($\gamma\times1.30$, $n_{T}-0.15$;
+marg.\ 3-seed ens.)} \\
+Parameter & reference & broadened & $\Delta$ \\
+\midrule
+C/O                & 0.910 & 0.901 & $-0.009$ \\
+overall (15-param) & 0.906 & 0.858 & $-0.048$ \\
+$T_3$              & 0.885 & 0.613 & $-0.272$ \\
+$T_2$              & 0.929 & 0.795 & $-0.134$ \\
+$T_4$              & 0.906 & 0.822 & $-0.084$ \\
+$T_1$              & 0.915 & 0.833 & $-0.081$ \\
+$\log g$           & 0.926 & 0.854 & $-0.073$ \\
+$[$M/H$]$          & 0.931 & 0.899 & $-0.032$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Per-species continuous-field perturbation amplitudes (standard
+deviations of the zero-mean Gaussian Fourier coefficients, natural-log units),
+from \texttt{interlist\_ratio\_priors\_v1.json}, released with the code. CO,
+NH$_3$, and H$_2$S share the mean-of-measured amplitude; CO$_2$ is the
+$1.5\times$-inflated stand-in.}
+\label{tab:opamp}
+\begin{tabular}{lccccc}
+\toprule
+Species & $\sigma_{\mathrm{const}}$ & $\sigma_1$ & $\sigma_2$ & $\sigma_3$ & $\sigma_4$ \\
+\midrule
+CH$_4$          & 0.226 & 0.244 & 0.184 & 0.114 & 0.057 \\
+H$_2$O          & 0.083 & 0.107 & 0.072 & 0.043 & 0.016 \\
+CO, NH$_3$, H$_2$S & 0.154 & 0.176 & 0.128 & 0.078 & 0.036 \\
+CO$_2$          & 0.339 & 0.366 & 0.276 & 0.171 & 0.085 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Real T8 benchmark (2MASS J04151954$-$0935066, SNR 24.5) C/O intervals
+against \citet{hood2024} $0.53\pm0.01$. ``Contains $0.53$'' lists the levels at
+which the posterior central interval contains Hood's central value $0.53$
+(that is, $\mathrm{lo}\le0.53\le\mathrm{hi}$); the $\pm0.01$ statistical band is
+narrower than our endpoint precision and is not resolved. The labels turn on
+hairline margins: raw marg (seed 0) contains $0.53$ at 68\% by $0.001$ and raw
+control misses it at 90\% by $0.008$. Rows 1--5 use the frozen leakage-free maps of (c),
+calibrated on 2{,}048 simulations and applied to this one real spectrum;
+recalibration shifts and rescales the endpoints, but the quoted median is always
+the raw posterior median. Row 6 is the single mask-augmented network of (f)
+through the same preprocessing, and row 7 pools its three seeds, the deployment
+recommended in (f) (both raw only: neither has a calibration half). Pooled draws
+total $2{,}001$, $667$ per seed, concatenated as elsewhere.}
+\label{tab:real}
+\begin{tabular}{lcccc}
+\toprule
+Method & C/O & 68\% interval & 90\% interval & contains $0.53$ \\
+\midrule
+raw control        & 0.642 & $[0.574,0.710]$ & $[0.538,0.765]$ & neither \\
+recal control      & 0.642 & $[0.546,0.918]$ & $[0.467,0.918]$ & 90\% only \\
+raw marg (seed 0)  & 0.669 & $[0.529,0.830]$ & $[0.418,0.940]$ & \textbf{68\% \& 90\%} \\
+recal marg (seed 0)& 0.669 & $[0.448,0.786]$ & $[0.339,0.915]$ & \textbf{68\% \& 90\%} \\
+3-seed ens.\ marg  & 0.746 & $[0.566,0.970]$ & $[0.460,1.115]$ & 90\% only \\
+mask-aug marg (s0) & 0.493 & $[0.374,0.708]$ & $[0.284,0.940]$ & \textbf{68\% \& 90\%} \\
+mask-aug marg ens.\ & 0.587 & $[0.420,0.828]$ & $[0.329,0.995]$ & \textbf{68\% \& 90\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=3.05in]{figures/fig1_deployment_maskaug.pdf}
+\caption{C/O coverage at nominal 0.90 on 1{,}024 perturbed held-out objects,
+both series evaluated on the same set at matched seed; both are single networks
+(the marginalized seed 0 trained without and with mask augmentation). Applying
+the 105 real G395H bad-pixel masks with median filling (median good-pixel
+fraction 0.47) costs the network trained without mask augmentation more than
+half its coverage; the mask-augmented network holds within 0.05 of its clean
+value.}
+\label{fig:deploy}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figures/fig2_real_sample.pdf}
+\caption{Retrieved C/O for 105 JWST/G395H spectral products of 13 late-T/Y
+dwarfs, ordered by SNR, against the \citet{hood2024} T8 band ($0.53\pm0.01$,
+gold); spectra left of the dashed rule fall below the training SNR support
+($\mathrm{SNR}<10$) and are shown greyed. At the T8 spectrum the three-seed
+marginalized ensemble's 68\% bar stops just above the band (lower edge $0.566$
+against $0.53$); it is the ensemble's 90\% interval, not drawn here, that
+contains $0.53$, while the single marginalized seed contains it at both levels
+(Table~\ref{tab:real}). The control medians cluster below the band (median
+$0.47$ over the 105 products, $0.49$ over the 58 in-support ones), with no error
+budget for opacity.}
+\label{fig:real}
+\end{figure}
+
+
+\textbf{Spectra.} Modeling grid $1850$--$3550$\,\si{\per\cm} (10{,}000
+equally-spaced-in-log-wavenumber points), variable-resolution convolution
+$R\!\approx\!2700$; inputs self-normalized \emph{per spectrum} (log, then
+subtract that spectrum's own mean and divide by its own standard deviation),
+applied identically to simulated and observed spectra.
+
+\textbf{Calibration is not information gain.} Per-spectrum normalization removes
+the absolute flux scale, so radius, which enters the emission model almost
+entirely through that scale, is close to unidentifiable, as is the
+calibration-jitter nuisance $\sigma_{\mathrm{cal}}$. Expressed as median $90\%$
+interval width over the $90\%$ width of the uniform prior, the marginalized
+network returns $0.97$ for radius, $0.99$ for $\sigma_{\mathrm{cal}}$, $0.99$
+for $\log k_{zz}$, $1.00$ for $\sigma_c$ and $0.93$ for $f_{\mathrm{sed}}$
+(essentially the prior), against $0.16$ for C/O, $0.05$ for $T_3$, $0.13$ for
+$v_r$ and $0.46$ for [M/H]. Coverage on a prior-returning parameter is trivially
+near-nominal, so those five are calibrated but uninformative and inflate the
+``overall'' mean. On the separate trained-amplitude validation cell
+($n\approx453$), restricting the mean to the ten parameters below $0.9$ of the
+prior barely moves the ensemble ($0.902\to0.904$) but separates the control
+further from it ($0.755\to0.691$), so the reported overall figures are if
+anything generous to the control. C/O is firmly in the informative group.
+\textbf{Embedding net.} 1D CNN (kernel 7) of stacked convolution, ReLU and
+max-pool blocks, then adaptive average pool and a linear map to a 128-d context
+vector.
+\textbf{Flow.} Bounded conditional neural spline flow (zuko NSF), 10 transforms,
+hidden features $(256,256)$; SNR appended to the context. Prior support is
+enforced by a bijective element-wise logistic map from the unbounded flow
+variable onto $[\mathrm{lo},\mathrm{hi}]$ with the change-of-variable Jacobian
+carried in the likelihood, so samples lie in the prior box by construction and
+the density stays normalized. This is a bounded transform, \emph{not} post-hoc
+clipping of out-of-range samples, which would distort the tails that the coverage
+statistics measure.
+\textbf{Training.} AdamW, learning rate $10^{-4}$, weight decay $10^{-4}$, batch
+64, up to 60 epochs, validation split 0.1, best-validation checkpointing (the
+lowest-validation-NLL epoch is restored). Mask augmentation applies a randomly
+drawn real mask to each training spectrum with probability 0.9.
+\textbf{Data volume.} Shard size 128 spectra; primary models trained on 3{,}000
+shards ($384{,}000$ nominal, $\approx$346k after a strict finite-pixel filter
+that drops $\sim$10\%); the scaling point uses 800 shards. That filter is
+\emph{not} parameter-independent: applying the identical criterion to a
+512-spectrum local validation set, the discard rate rises monotonically across
+C/O quintiles, $0.04,\,0.09,\,0.19,\,0.19,\,0.20$ from the lowest to the highest.
+Simulator failures therefore tilt the effective training prior away from high
+C/O relative to the nominal uniform prior. We have not characterized this
+dependence on the full perturbed set, nor propagated the implied prior tilt into
+the reported coverages; it is a limitation.
+\textbf{Compute.} 1M-spectrum generation on a TPU v4-64; NPE training on the pod
+\emph{host CPU}. Simulated-set posterior summaries use 400 samples per network;
+the real-data application uses 667 per network so that a three-seed ensemble
+also totals 2{,}001 draws.
+\textbf{Inference latency (measured).} On a single core of an Intel Core
+i5-13600K (\texttt{torch.set\_num\_threads(1)}, CPU-only PyTorch 2.7), one
+seed's 400-sample posterior for a single G395H spectrum takes $\approx$1.3\,s
+(median of 20 reps; the CNN embedding plus one flow evaluation is
+$\approx$0.09\,s and flow sampling adds $\approx$3\,ms/sample); the three-seed
+ensemble is $\approx$3.9\,s serially on one core, or $\approx$1.3\,s with the
+seeds run concurrently. The cost is thus a fixed forward pass with no per-object
+optimization, against $K$ classical retrievals each costing CPU-hours. A GPU or
+batched evaluation reduces it further; we report the conservative single-core
+figure.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figures/fig3_sbc_tarp.pdf}
+\caption{Simulation-based calibration on the $n=2048$ split, 400 posterior
+samples per seed. Left three panels: C/O PIT histograms, where a calibrated
+posterior is uniform (dashed); the two marginalized panels share a second,
+expanded vertical scale. All $\chi^2$ quoted here are for the C/O PIT histogram
+alone (20 bins, 19 dof), not the 15-parameter pooled statistic of
+\S\ref{sec:results}(b). The control is strongly U-shaped (overconfident, rank
+mean 0.673, C/O $\chi^2=6315$); a single marginalized seed is closer to uniform
+(rank mean 0.416, C/O $\chi^2=328$); the three-seed ensemble is closer still but
+retains a residual asymmetric bias (rank mean 0.427, C/O $\chi^2=146$). Right panel: TARP
+expected-coverage probability minus nominal (50 reference points), where zero is
+exact joint calibration; the three curves take the colours of the PIT panel
+titles. The ensemble's maximum deviation is 0.0049, against 0.0218 for a single
+seed and 0.0348 for the control.}
+\label{fig:sbc}
+\end{figure}
+
+\end{document}

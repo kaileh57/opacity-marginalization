@@ -1,0 +1,74 @@
+name: g395h_rv
+wavelength_label: JWST NIRSpec G395H
+nu_min_cm1: 1850.0
+nu_max_cm1: 3550.0
+n_wavenumber: 10000
+n_layers: 100
+pressure_top_bar: 1.0e-6
+pressure_bottom_bar: 1000.0
+knot_log10_pressures_bar: [-5.0, -3.0, -1.0, 1.0, 3.0]
+instrument_resolving_power: 2700.0
+default_distance_pc: 10.0
+molecules: [H2O, CO, CH4, NH3, CO2, H2S]
+continuum_species: [H2-H2, H2-He]
+track_root: g395h
+tpu_batch_size: 16
+noise:
+  snr_min: 10.0
+  snr_max: 200.0
+  flux_calibration_sigma_max: 0.05
+  resolving_power_jitter_fraction: 0.05
+  max_pixel_shift: 1.0
+  baseline_tilt_max: 0.03
+opacity_databases:
+  - name: CO
+    database_class: MdbExomol
+    relative_path: g395h/CO/12C-16O/Li2015
+    database_name: ExoMol/Li2015
+  - name: NH3
+    database_class: MdbExomol
+    relative_path: g395h/NH3/14N-1H3/BYTe
+    database_name: ExoMol/BYTe
+  - name: CH4
+    database_class: MdbHitemp
+    relative_path: g395h/CH4_HITEMP/CH4
+    database_name: HITEMP 2020
+    crit: 1.0e-30
+  - name: H2O
+    database_class: MdbHitemp
+    relative_path: g395h/H2O_HITEMP/H2O
+    database_name: HITEMP 2010
+    crit: 1.0e-30
+  - name: CO2
+    database_class: MdbHitemp
+    relative_path: g395h/CO2_HITEMP/CO2
+    database_name: HITEMP 2024
+    crit: 1.0e-30
+  - name: H2S
+    database_class: MdbExomol
+    relative_path: g395h/H2S/1H2-32S/AYT2
+    database_name: ExoMol/AYT2
+  - name: H2-H2
+    database_class: CdbCIA
+    relative_path: CIA/H2-H2
+    database_name: HITRAN CIA
+  - name: H2-He
+    database_class: CdbCIA
+    relative_path: CIA/H2-He
+    database_name: HITRAN CIA
+parameter_priors:
+  - { name: T1, lower: 150.0, upper: 1500.0 }
+  - { name: T2, lower: 200.0, upper: 2000.0 }
+  - { name: T3, lower: 300.0, upper: 2500.0 }
+  - { name: T4, lower: 500.0, upper: 3000.0 }
+  - { name: T5, lower: 800.0, upper: 3500.0 }
+  - { name: metallicity, lower: -1.0, upper: 1.5 }
+  - { name: carbon_to_oxygen, lower: 0.1, upper: 1.5 }
+  - { name: log_kzz, lower: 6.0, upper: 10.0 }
+  - { name: log_gravity, lower: 3.0, upper: 5.5 }
+  - { name: rv_km_s, lower: -100.0, upper: 100.0 }
+  - { name: radius_rjup, lower: 0.5, upper: 2.0 }
+  - { name: snr, lower: 10.0, upper: 200.0, is_conditioning: true }
+metadata:
+  priority: experimental
+  note: 5-knot G395H config with radial velocity as an explicit retrieval parameter.

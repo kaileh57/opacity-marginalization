@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+title: Amortized opacity marginalization
+message: If you use this software or data, please cite the paper.
+authors:
+  - family-names: Heraty
+    given-names: Kellen
+repository-code: https://github.com/kaileh57/opacity-marginalization
+license: MIT

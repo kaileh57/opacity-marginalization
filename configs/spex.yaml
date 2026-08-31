@@ -1,0 +1,65 @@
+name: spex
+wavelength_label: SpeX Prism 0.8-2.5um (binary-screen scale-up)
+# Full NIR prism band. ESLOG grid; native sampling R~10500 >> instrument R=100 so
+# alkali (Allard) far-wings and molecular cores are over-resolved before convolution.
+nu_min_cm1: 4000.0          # 2.50 um
+nu_max_cm1: 12500.0         # 0.80 um
+n_wavenumber: 12000
+n_layers: 100
+pressure_top_bar: 1.0e-6
+pressure_bottom_bar: 1000.0
+knot_log10_pressures_bar: [-5.0, -3.5, -2.0, -0.5, 1.0, 2.0, 3.0]   # 7 knots (wide M/L/T T-P structure)
+instrument_resolving_power: 100.0
+default_distance_pc: 10.0
+# First-pass L/T-focused gravity-complete set. Na/K are ATOMIC (TabulatedAlkali, Allard wings).
+# TiO/VO (M-dwarf optical, largest line lists) + Ackerman-Marley clouds (early-L) are the
+# documented M/early-L extension (SPEX_FORWARD_MODEL_SPEC.md sec 2.1/6); add after the
+# end-to-end L/T pipeline validates. H2-CIA is the key gravity diagnostic G395H lacked.
+molecules: [H2O, CH4, CO, NH3, H2S, Na, K]
+continuum_species: [H2-H2, H2-He]
+track_root: spex
+cloud_model: "off"          # cloudless first pass (valid for T and the binary-validation anchors)
+tpu_batch_size: 4
+noise:
+  snr_min: 20.0             # SpeX Prism Library typical SNR
+  snr_max: 120.0
+  flux_calibration_sigma_max: 0.05
+  resolving_power_jitter_fraction: 0.10   # SpeX R varies across the band
+  max_pixel_shift: 1.0
+  baseline_tilt_max: 0.05
+# ALL opacities are pre-computed petitRADTRANS line-by-line cross-sections, resampled to this nu grid
+# (scripts/build_alkali_opacity_table.py) and loaded via TabulatedXsec. This avoids the egress-walled
+# ExoMol .trans download-during-build (ExoMol lists are band-split; the staged g395h-band trans do NOT
+# cover 4000-12500 cm^-1) and the per-species PreMODIT build. Validated opacities; correct for a
+# floor-immune bulk-shape binary screen. Na/K use the Allard profiles exojax cannot model.
+opacity_databases:
+  - { name: H2O, database_class: TabulatedXsec, relative_path: spex/H2O/H2O_hitemp_spex.npz,    database_name: petitRADTRANS/HITEMP (1H2-16O) }
+  - { name: CH4, database_class: TabulatedXsec, relative_path: spex/CH4/CH4_hargreaves_spex.npz, database_name: petitRADTRANS/Hargreaves (12C-1H4) }
+  - { name: CO,  database_class: TabulatedXsec, relative_path: spex/CO/CO_natabund_spex.npz,     database_name: petitRADTRANS/HITEMP (C-O nat.abund) }
+  - { name: NH3, database_class: TabulatedXsec, relative_path: spex/NH3/NH3_coyute_spex.npz,     database_name: petitRADTRANS/CoYuTe (14N-1H3) }
+  - { name: H2S, database_class: TabulatedXsec, relative_path: spex/H2S/H2S_hitran_spex.npz,     database_name: petitRADTRANS/HITRAN (1H2-32S) }
+  - { name: Na,  database_class: TabulatedXsec, relative_path: spex/atoms/Na/Na_allard_spex.npz, database_name: petitRADTRANS/Allard2019 (23Na__NewAllard) }
+  - { name: K,   database_class: TabulatedXsec, relative_path: spex/atoms/K/K_allard_spex.npz,   database_name: petitRADTRANS/Allard2016 (39K__Allard) }
+  - { name: H2-H2, database_class: CdbCIA, relative_path: CIA/H2-H2, database_name: HITRAN CIA }
+  - { name: H2-He, database_class: CdbCIA, relative_path: CIA/H2-He, database_name: HITRAN CIA }
+parameter_priors:
+  - { name: T1, lower: 150.0, upper: 1500.0 }
+  - { name: T2, lower: 175.0, upper: 1750.0 }
+  - { name: T3, lower: 250.0, upper: 2250.0 }
+  - { name: T4, lower: 350.0, upper: 2625.0 }
+  - { name: T5, lower: 500.0, upper: 3000.0 }
+  - { name: T6, lower: 650.0, upper: 3250.0 }
+  - { name: T7, lower: 800.0, upper: 3500.0 }   # <=3500 K: float32 LSD ceiling (auto_trange [200,3500])
+  - { name: metallicity, lower: -1.0, upper: 1.5 }
+  - { name: carbon_to_oxygen, lower: 0.1, upper: 1.5 }
+  - { name: log_kzz, lower: 6.0, upper: 10.0 }
+  - { name: log_gravity, lower: 3.0, upper: 5.5 }   # KEY axis: NIR gravity diagnostics break the G395H log_g degeneracy
+  - { name: radius_rjup, lower: 0.5, upper: 2.0 }   # KEY: absolute flux -> radius -> over-luminosity binary signal
+  - { name: snr, lower: 20.0, upper: 120.0, is_conditioning: true }
+metadata:
+  priority: scaleup
+  note: >-
+    SpeX Prism binary-screen track. L/T-focused cloudless first pass. Na/K via TabulatedAlkali
+    (pre-computed Allard opacities from petitRADTRANS, staged + resampled to this nu grid).
+    Extensions (M/early-L): add TiO/VO line lists + cloud_model ackerman_marley. See
+    outputs/paper_binary/SPEX_FORWARD_MODEL_SPEC.md.

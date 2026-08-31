@@ -1,0 +1,11 @@
+{
+  "description": "Provenance for the appendix filter-tilt statement (v3.3): run_training.py's strict finite/positive-flux filter applied to the 512 local v6_cloud validation spectra; discard fraction overall and by C/O quintile (Q1=lowest C/O). Computed 2026-08-01 during the v3.3 revision (agent run, commit eade4e6); archived here because the numbers appear in the paper but were not previously persisted.",
+  "protocol": {
+    "filter": "all(isfinite(flux) & flux > 0) per spectrum, identical to run_training.py",
+    "sample": "512 v6_cloud validation spectra (local copy)",
+    "quintile_variable": "true C/O, ascending"
+  },
+  "discard_fraction_overall": 0.14,
+  "discard_fraction_by_co_quintile": [0.04, 0.09, 0.19, 0.19, 0.20],
+  "caveat": "Not characterized on the full perturbed (v7_opmarg) set; stated as a limitation in the paper appendix."
+}

@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sculptor"
+version = "0.1.0"
+description = "Amortized Bayesian inference pipeline for brown dwarf atmospheric retrieval."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "Kellen Heraty" }
+]
+dependencies = [
+  "numpy>=1.24,<2.0",
+  "PyYAML>=6.0",
+  "requests>=2.31",
+]
+
+[project.optional-dependencies]
+science = [
+  "scipy>=1.11",
+  "h5py>=3.10",
+]
+cloud = [
+  "google-cloud-storage>=2.16",
+  "jax>=0.4",
+  "jaxlib>=0.4",
+  "exojax @ git+https://github.com/HajimeKawahara/exojax.git",
+]
+train = [
+  "torch>=2.2",
+  "zuko>=1.2",
+  "nflows>=0.14",
+]
+dev = [
+  "pytest>=8.0",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["sculptor*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
