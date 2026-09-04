@@ -55,9 +55,9 @@ Two matched one-million-spectrum sets, `v7_opmarg` (perturbed) and `v6_cloud` (u
             Calibration for Brown-Dwarf Retrievals},
   author = {Heraty, Kellen},
   year   = {2026},
-  eprint = {ARXIV_ID},
+  eprint = {2609.01665},
   archivePrefix = {arXiv},
-  primaryClass  = {astro-ph.EP}
+  primaryClass  = {astro-ph.IM}
 }
 ```
 
