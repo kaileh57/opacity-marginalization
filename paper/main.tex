@@ -1,5 +1,4 @@
-% ML4PS @ NeurIPS 2026 -- extended abstract (4 pp main text + references)
-% Requires the NeurIPS style file, shipped here as neurips_2026.sty.
+% Preprint. Typeset with the NeurIPS style file, shipped here as neurips_2026.sty.
 % Compile: pdflatex main && bibtex main && pdflatex main && pdflatex main
 \documentclass{article}
 
@@ -36,13 +35,9 @@
 \renewcommand{\textfraction}{0.06}
 \renewcommand{\floatpagefraction}{0.80}
 
-% ML4PS uses the NeurIPS style but its own footer string (workshop, non-archival).
-% The shipped .sty hard-codes a conference notice; retarget it to the workshop
-% without inventing a conference ordinal.
+% Preprint: drop the conference notice box from the first page.
 \makeatletter
-\renewcommand{\@noticestring}{%
-  Machine Learning and the Physical Sciences Workshop, NeurIPS 2026.%
-}
+\AtBeginDocument{\def\@notice{}}
 \makeatother
 
 \title{Amortized Opacity Marginalization Improves C/O\\
@@ -72,16 +67,17 @@ against 82.4\% for a compute-matched marginalized network; three-seed control
 ensembles reach 93.2\%
 on clean data but 61.4\% under perturbation, against 89.4\% marginalized,
 isolating the deficit as opacity-induced (TARP joint expected-coverage deviation
-0.005 against 0.035). An axis ablation traces the gain to the continuous field
-(45.4\% for the discrete swaps alone, 79.3\% for the field alone). Applying the
-105 real bad-pixel masks with median
-filling then collapsed the ensemble's C/O coverage from 0.901 to 0.479;
-retraining on the same mask distribution and pooling three such seeds returns a
-nominal 0.905 C/O and 0.891 overall under the full deployment path, still in
-simulation ($n=1024$, same 105 masks), at 0.21 to 0.31 of the prior width. On 105 JWST/G395H spectral products of 13
-late-T/Y dwarfs, single marginalized networks bracket the Hood et al.\ (2024) T8
-benchmark C/O where the control excludes it, a consistency check rather than a validation, at $\approx$1.6--2.6$\times$
-wider intervals.
+0.005 against 0.035 for a single control network). An axis ablation traces the gain to the continuous field
+(45.4\% for the discrete swaps alone, 79.3\% for the field alone). In simulation, real
+JWST bad-pixel masks with median filling cut the marginalized ensemble's C/O
+coverage from 0.894 to 0.683; an ensemble retrained with mask augmentation holds
+0.918 under the full deployment preprocessing ($n=1024$). We apply
+the networks to one pipeline-combined JWST/NIRSpec G395H spectrum each of 14
+late-T and Y dwarfs. The recommended mask-augmented ensemble returns C/O medians between
+0.24 and 0.62 and contains the Hood et al.\ (2024) value of 0.53 for the T8
+benchmark 2MASS J0415$-$0935, which every fixed-opacity control network excludes.
+With 90\% intervals spanning about 0.43 of the prior width, this is a
+consistency check, not a validation.
 \end{abstract}
 
 \section{Introduction}
@@ -219,8 +215,11 @@ the flow under-dispersion ensembling corrects \citep[cf.][]{hermans2022};
 pooling one, two, three seeds gives C/O $0.844$, $0.842$, $0.893$, so seed-
 count saturation is untested. Joint
 calibration, measured by TARP \citep{lemos2023}, is about sevenfold tighter
-for the ensemble: maximum expected-coverage deviation $0.0049$ (bootstrap 95\%
-$[0.0025,0.0144]$) against $0.0348$ for the control (Fig.~\ref{fig:sbc}). SBC still finds residual
+for the marginalized ensemble than for a single control network: maximum
+expected-coverage deviation $0.0049$ (bootstrap 95\% $[0.0025,0.0144]$) against
+$0.0348$ (Fig.~\ref{fig:sbc}). A single marginalized network reaches $0.0218$
+(bootstrap 95\% $[0.0167,0.0280]$), so ensembling accounts for most of that gap,
+and the comparison is not between equal numbers of networks. SBC still finds residual
 miscalibration: pooling the probability-integral-transform (PIT) values of all 15 parameters
 ($30{,}720$) the ensemble rejects uniformity
 ($\chi^2_{\mathrm{pooled}}=116.2$, 19 dof, $p<10^{-14}$), and the C/O histogram is
@@ -256,47 +255,60 @@ not extend to $2\times$. A model retrained with the CH$_4$-ExoMol cache withheld
 covers never-seen shards from it as well as matched in-cache data (0.821 against 0.790), a stability result on a test that is not family-blind,
 only the discrete cache being withheld (Appendix~\ref{app:repro}).
 
-\paragraph{(f) Deployment preprocessing breaks calibration; mask-augmented
+\paragraph{(f) Deployment preprocessing costs calibration; mask-augmented
 ensembling repairs it.}
-Our deployment path masks bad pixels and median-fills; applying the 105 real
-G395H masks (median good-pixel fraction 0.468) to simulated held-out spectra
-collapsed the three-seed marginalized ensemble's C/O coverage from 0.901 to
-0.479 (control 0.457 to 0.329); the full path (masking plus scalar re-noising)
-gave 0.480 while re-noising alone was harmless at 0.897, so masking accounts for it, by
-information loss (Appendix~\ref{app:repro}). Retraining on the same mask distribution recovers
-most of it. One mask-augmented network covers C/O at 0.866 under real-mask
-filling and 0.843 under the full path, against 0.398 and 0.438 for its matched
-un-augmented seed (Fig.~\ref{fig:deploy}); pooling three such seeds reaches
-0.916 and 0.905, with overall coverage 0.903 and 0.891 and unmasked coverage
-intact at 0.933 (Table~\ref{tab:stress}). Ensembling supplies the last 6 points,
-though the single and pooled figures come from separately drawn sets
-(Appendix~\ref{app:repro}). Pooling also costs width, the
-ensemble's median 90\% C/O interval going from 0.209 of the prior width unmasked
-to 0.311 under the full path. The stress set is simulated and the same 105 masks
-serve augmentation and evaluation, so unseen mask geometries are untested.
+On real spectra the deployment path masks bad pixels and the NRS1/NRS2 detector
+gap, median-fills them and conditions on the median SNR, none of which the
+training set saw. To measure the cost, we apply the masks of the 14 real spectra
+of (g) (median good-pixel fraction 0.89) to $1{,}024$ perturbed held-out
+simulations, whose truths are known, and score every network on the same masked
+spectra (Table~\ref{tab:stress}, Fig.~\ref{fig:deploy}). Masking and median
+filling cut the marginalized ensemble's C/O coverage from 0.894 to 0.683, and
+the full path, which adds flat re-noising at the median SNR, gives 0.702, so the
+masking does the damage. Three networks retrained with mask augmentation and
+pooled hold 0.924 unmasked, 0.928 masked and 0.918 on the full path, where
+their overall coverage is 0.894. The fix costs width: the mask-augmented
+ensemble's median 90\% C/O interval is 0.209 of the prior width unmasked, against
+0.164 for the un-augmented ensemble. Two limits apply. The stress set is
+simulated, and the mask-augmented networks were trained on masks drawn from the
+105 products of versions 1 and 2, which include these 14, so this is not a test
+on unseen mask geometries. Versions 1 and 2
+reported a far larger collapse, from 0.901 to 0.479, because most of their 105
+masks came from single-detector files that cover about half the band.
 
-\paragraph{(g) Illustrative application to real JWST data.}
-The sample is 105 JWST/NIRSpec G395H (F290LP) spectral products
-of 13 late-T/Y dwarfs (15 program-observation IDs; Fig.~\ref{fig:real}), so
-population statements are read at the spectrum level. Per-spectrum SNR ranges
-$\approx0.7$--$107$ against a training prior of $[10,200]$, so summaries are
-read on the 58 in-support spectra (SNR$\ge10$), where the marginalized seed
-constrains C/O below the prior width everywhere at width/prior
-$\approx0.33$ against $\approx0.21$ for the control. Seed variance is real (pairwise median $|\Delta\mathrm{C/O}|=0.19$), so the
-ensemble is the recommended deployment. Posterior-predictive
-residuals exceed the marginalized envelope for 58 of the 94 scoreable spectra,
-so (f) is not the only deployment failure. On the
-T8 benchmark (2MASS J04151954$-$0935066; \citealt{hood2024} report C/O
-$=0.53\pm0.01$, a \emph{statistical} bar only), the marginalized intervals sit
-closer to $0.53$ than the control's at every level, though the containment
-labels of Table~\ref{tab:real} turn on hairline margins, so the table orders the
-methods only weakly. The recommended deployment, the three mask-augmented seeds of (f) pooled, gives
-a T8 C/O of $0.587$ containing $0.53$ at both levels, so the picture does not rest
-on the un-augmented checkpoints, and hardening for deployment widens the
-in-support intervals (Appendix~\ref{app:repro}).
-Hood's convention is commensurate with ours, but chemistry, wavelength
-coverage and forward model still differ, which keeps this a consistency check
-(Appendix~\ref{app:repro}).
+\paragraph{(g) Application to real JWST spectra.}
+The sample is one pipeline-combined (level-3) NIRSpec G395H/F290LP spectrum per
+object for 14 late-T and Y dwarfs from programs 1189 and 2124
+(Table~\ref{tab:sample}, Fig.~\ref{fig:real}). Versions 1 and 2 of this paper
+used 105 products of these programs, which mixed the combined spectra with
+single-exposure, single-detector files and so counted most objects many times,
+often as half-band spectra. Seven of those products held no source: three
+fixed slits of the 1189 observation that did not contain WISE~1828$+$2650, and a
+failed 2124 visit to J1935$-$1546 (its combined spectrum and three exposures),
+which the program repeated. This version drops all of them. Each spectrum is
+resampled onto the model grid, its bad pixels and the NRS1/NRS2 detector gap are
+masked (good-pixel fraction 0.89 for the slit spectra, 0.93 for the IFU
+spectrum) and median-filled, and the network is conditioned on its median SNR.
+Eleven objects fall inside the training SNR range of $[10,200]$; the other three
+(SNR 6.3 to 8.1) are shown in Fig.~\ref{fig:real} but left out of the summaries
+below.
+
+On the 11 in-support objects the recommended deployment, the three
+mask-augmented seeds of (f) pooled, returns C/O medians from 0.24 to 0.59 and a
+median 90\% interval of 0.43 of the prior width. The mask-augmented seeds also
+agree more closely with each other: the pairwise median $|\Delta\mathrm{C/O}|$ between seeds is
+0.09 for the mask-augmented networks, against 0.25 for the un-augmented
+marginalized networks and 0.23 for the controls. For the T8 benchmark
+2MASS J04151954$-$0935066 (SNR 24.5), \citet{hood2024} report C/O
+$=0.53\pm0.01$, a statistical bar only. The mask-augmented ensemble gives
+$0.595$, 68\% interval $[0.430,0.829]$, and each of its three seeds contains
+$0.53$ at 68\% and 90\% (Table~\ref{tab:real}). Every control network misses it
+at both levels, with medians of 0.64 to 0.70 and 90\% intervals that stop at
+0.54 or above. The un-augmented marginalized seeds split: two contain $0.53$ at
+both levels and the third, with median 0.92, at neither. One object with an
+interval this wide is weak evidence. Hood's oxygen convention matches ours, but
+their chemistry, wavelength coverage and forward model differ, so this is a
+consistency check (Appendix~\ref{app:repro}).
 
 \paragraph{(h) The continuous field carries most of the calibration benefit.}
 Two networks matched to marginalized seed 0 in seed, schedule and shard count
@@ -319,11 +331,16 @@ error is not. Coverage is marginal and PIT uniformity is still rejected (b), so
 we scope the claim to central C/O intervals. Simulator failures induce a parameter-dependent acceptance function,
 especially in C/O, so calibration is conditional on successful generation, not
 on the nominal prior.
-Mask augmentation is scored on the same 105 masks it trains on, the control
-and recalibrated real-data rows still use un-augmented models, and real-data
-preprocessing stays coarse. Marginalization costs
-$\approx$1.6--2.6$\times$ wider intervals, and posterior fidelity against a
-classical NUTS retrieval is not tested. No line-shape lever we tried (LSF nulls, broadening rescalings, $\chi$-factor
+The mask-augmented networks were trained with masks drawn from the 105-product
+set of versions 1 and 2 (median good-pixel fraction 0.47, most of them
+single-detector half-band masks) and are tested here with the 14 clean masks, so
+masks from other programs and reductions remain untested. Real-data
+preprocessing stays coarse, and no posterior-predictive check is reported for
+the clean sample. Marginalization widens intervals: on the simulated split the
+marginalized network's median 90\% C/O interval is $2.6\times$ the control's
+for single networks and $2.1\times$ for the ensembles
+(Table~\ref{tab:coverage}). Posterior fidelity against a classical NUTS
+retrieval is not tested. No line-shape lever we tried (LSF nulls, broadening rescalings, $\chi$-factor
 CO$_2$ line mixing, \citealt{perrin1989}) recovered the $\sim$7\% floor, which
 is why we marginalize over it.
 The Fourier field also stands in for an error with a measurable origin: the
@@ -350,8 +367,22 @@ laboratory bounds of \citet{hosokawa2025} would target
 \bibliography{references}
 
 \section*{Data, code and acknowledgments}
-Datasets, weights, priors, result JSONs and code will be released on the Hugging
-Face Hub on acceptance. Supported with Cloud TPUs from Google's TRC.
+Code, result JSONs and the paper source are at
+\url{https://github.com/kaileh57/opacity-marginalization}; datasets, trained
+weights, priors and held-out evaluation sets are at
+\url{https://huggingface.co/datasets/Kaileh57/opacity-marginalization}.
+We thank Hajime Kawahara for ExoJAX and for his guidance throughout this
+project, from its earliest framing to the experiments reported here.
+Supported with Cloud TPUs from Google's TPU Research Cloud.
+
+\textbf{Use of generative AI.} The author used Claude (Anthropic) to help
+with LaTeX formatting and to edit the manuscript text for clarity. Claude was
+not used to generate data, run calculations, produce analysis or select
+references. The author reviewed every edit and takes full responsibility for
+the content. To validate the final text, every number reported in the paper
+was checked against the result files released with the code, and every
+reference was checked against its arXiv or journal record (this check
+corrected one page range).
 
 \appendix
 \section{Reproducibility}
@@ -385,43 +416,36 @@ fix the per-object conditional bias in any regime. Of the 15 parameters, 6 fail
 a Bonferroni-corrected Kolmogorov--Smirnov test of PIT uniformity for the
 ensemble (\S\ref{sec:results}(b)).
 
-\textbf{Real-sample caveats (\S\ref{sec:results}(g)).} Seed variance across the
-105 spectra breaks down into a within-program-observation-ID scatter of 0.157
-and an across-ID scatter of 0.168, so repeatability is quoted at the
-program-observation level; the physical identity of the two jw01189
-re-observations cannot be established from the data on disk, and merging them
-could only raise the within-group figure. Line-list error is a shared
-systematic, so the 105 products are not independent realizations of it and a
-population analysis would need it as a shared latent. The Luhman\,16AB C/O of
-\citet{yama2026} sits on a third convention, a gas-phase CO-to-H$_2$O
-mixing-ratio quantity where ours is an elemental input. \citet{hood2024}, by
-contrast, scale their retrieved oxygen by $1.3$ for silicate sequestration, so
-their $0.53$ is already commensurate with our bulk elemental ratio. Over the 58
-in-support spectra the mask-augmented three-seed ensemble's median $90\%$ C/O
-interval is $0.48$ of the prior width, against $0.41$ for the single
-mask-augmented seed, whose T8 median is $0.493$.
+\textbf{Real sample (\S\ref{sec:results}(g)).} Table~\ref{tab:sample} lists
+the 14 products, all \texttt{x1d} files from MAST. Programs 1189 and 2124 were
+processed with JWST pipeline versions 2.0.1 and 3.0.0. WISE~0458$+$6434 is a
+known binary observed with the IFU, so its spectrum is extracted differently
+from the 13 fixed-slit spectra. The preprocessed arrays for all 105 products
+of versions 1 and 2 are on the Hugging Face dataset under
+\texttt{real\_inputs/}, and \texttt{real\_inputs/objects\_clean14.json} lists
+the 14 used here. Line-list error is a shared systematic, so the 14 objects are
+not independent realizations of it; a population analysis would need it as a
+shared latent. The Luhman\,16AB C/O of \citet{yama2026} sits on a third
+convention, a gas-phase CO-to-H$_2$O mixing-ratio quantity where ours is an
+elemental input. \citet{hood2024}, by contrast, scale their retrieved oxygen by
+$1.3$ for silicate sequestration, so their $0.53$ is commensurate with our bulk
+elemental ratio. Each model contributes $2{,}001$ posterior draws per object,
+split $667$ per seed for the pooled ensembles. Earlier versions also listed recalibrated
+intervals for this object. The frozen maps of \S\ref{sec:results}(c) were not
+saved with the release, so this version reports raw intervals only.
 
-\textbf{Mask-collapse control (\S\ref{sec:results}(f)).} Recomputing the
-per-spectrum normalization from good pixels only and zero-filling recovers just
-3\% of the mask collapse ($0.478\to0.491$ against 0.895), so the failure is
-information loss, not a normalization artifact.
-
-\textbf{Mask-augmented ensemble (\S\ref{sec:results}(f)).} Three networks were
-trained from seeds 0, 1 and 2 on the perturbed set with mask augmentation, then
-pooled and run through the four preprocessing variants of
-Table~\ref{tab:stress} on $1{,}024$ perturbed held-out objects. The
-un-augmented single network in that table is marginalized seed 0 evaluated on
-the same objects in the same invocation. The un-augmented seed common to the
-single-network and the pooled evaluations differs by $0.020$ across the two sets,
-$0.9$ standard errors, against a $+0.062$ ensemble gain at $4.3$. On the unmasked variant the ensemble
-returns C/O $0.933$ and overall $0.906$, against the $0.894$ and $0.902$ of the
-un-augmented ensemble on the $n=2048$ split, so clean coverage survives
-augmentation and runs $3.3$ points \emph{over} nominal rather than at it. The
-width cost is real. At matched seed and matched set the mask-augmented network's
-median $90\%$ C/O interval is $1.33\times$ the un-augmented one's ($0.184$
-against $0.138$ of the prior width), and the mask-augmented ensemble sits at
-$0.209$ against the $0.168$ of the un-augmented marginalized ensemble in
-Table~\ref{tab:coverage}.
+\textbf{Deployment stress (\S\ref{sec:results}(f)).} The $1{,}024$ objects are
+the first perturbed held-out shards on the Hugging Face dataset after the
+finite-pixel filter. Each variant draws one real mask per object with a fixed
+seed, and every network in Table~\ref{tab:stress} is scored on the identical
+masked spectra, so the columns are matched. Pooled ensembles use $133$ draws per
+seed and the control $400$. The un-augmented marginalized ensemble scores $0.894$
+unmasked here against $0.901$ in the corresponding version-2 run, within the
+binomial standard error of $0.009$. The three mask-augmented networks were
+trained from seeds 0, 1 and 2 on the perturbed set. On the same unmasked spectra
+their pooled median 90\% C/O interval is $0.209$ of the prior width, against
+$0.164$ for the un-augmented ensemble. The script and outputs are in the repository under
+\texttt{scripts/v3/} and \texttt{results/v3/}.
 
 \textbf{Broadening stress (\S\ref{sec:limits}).} Every line's Lorentz half-width
 in PreMODIT follows
@@ -570,32 +594,27 @@ smooth only ($n=434$)     & 0.472 & \textbf{0.910} \\
 \caption{The two stress tests, C/O central-interval coverage at nominal $0.90$
 unless a row says otherwise. Upper block: the deployment path of
 \S\ref{sec:results}(f) on $1{,}024$ perturbed held-out objects (binomial SE
-$\approx0.009$). ``un-aug.\ s0'' is marginalized seed 0 \emph{without} mask
-augmentation, not the fixed-opacity control of Table~\ref{tab:coverage}. The
-mask-augmented single network was scored on a separately
-drawn $1{,}024$-object set, on which the un-augmented seed gives
-$0.836/0.398/0.819/0.438$, so that column is matched to its own set rather than
-to this one. ``width/prior'' is the median $90\%$ C/O interval over the prior
-width ($1.4$); bold marks the recommended deployment column, and the lower
-block, having no recommended column, is unbolded. Lower block: the broadening
-perturbation of
-\S\ref{sec:limits} applied to the marginalized three-seed ensemble, which is not
-retrained ($434$ reference and $444$ broadened spectra; binomial SE
-$\approx0.014$).}
+$\approx0.009$), every column scored on the same masked spectra. ``control s0''
+is the fixed-opacity control, seed 0; ``marg.'' is the marginalized ensemble
+trained without mask augmentation. ``width/prior'' is the median $90\%$ C/O
+interval over the prior width ($1.4$); bold marks the recommended deployment, and
+the lower block, having no recommended column, is unbolded. Lower block: the
+broadening perturbation of \S\ref{sec:limits} applied to the marginalized
+three-seed ensemble, which is not retrained ($434$ reference and $444$ broadened
+spectra; binomial SE $\approx0.014$).}
 \label{tab:stress}
 \begin{tabular}{lccc}
 \toprule
-\multicolumn{4}{l}{\emph{Deployment stress} ($n=1{,}024$, 105 real masks)} \\
-Preprocessing & un-aug.\ s0 & mask-aug.\ s0 & \textbf{mask-aug.\ 3-seed ens.} \\
+\multicolumn{4}{l}{\emph{Deployment stress} ($n=1{,}024$, masks of the 14 real spectra)} \\
+Preprocessing & control s0 & marg.\ 3-seed ens. & \textbf{mask-aug.\ 3-seed ens.} \\
 \midrule
-none (unmasked)          & 0.834 & 0.888 & \textbf{0.933} \\
-real-mask median fill    & 0.405 & 0.866 & \textbf{0.916} \\
-scalar re-noise only     & 0.823 & 0.872 & \textbf{0.932} \\
-full path                & 0.418 & 0.843 & \textbf{0.905} \\
+none (unmasked) & 0.451 & 0.894 & \textbf{0.924} \\
+real-mask median fill & 0.430 & 0.683 & \textbf{0.928} \\
+full path & 0.456 & 0.702 & \textbf{0.918} \\
 \midrule
-Overall @0.90, full path & 0.675 & 0.852 & \textbf{0.891} \\
-Width/prior, unmasked    & 0.138 & 0.184 & 0.209 \\
-Width/prior, full path   & 0.220 & 0.280 & 0.311 \\
+Overall @0.90, full path & 0.643 & 0.800 & \textbf{0.894} \\
+Width/prior, unmasked & 0.051 & 0.164 & 0.209 \\
+Width/prior, full path & 0.078 & 0.215 & 0.224 \\
 \midrule
 \multicolumn{4}{l}{\emph{Broadening stress} ($\gamma\times1.30$, $n_{T}-0.15$;
 marg.\ 3-seed ens.)} \\
@@ -635,31 +654,67 @@ CO$_2$          & 0.339 & 0.366 & 0.276 & 0.171 & 0.085 \\
 
 \begin{table}[h]
 \centering
-\caption{Real T8 benchmark (2MASS J04151954$-$0935066, SNR 24.5) C/O intervals
-against \citet{hood2024} $0.53\pm0.01$. ``Contains $0.53$'' lists the levels at
-which the posterior central interval contains Hood's central value $0.53$
-(that is, $\mathrm{lo}\le0.53\le\mathrm{hi}$); the $\pm0.01$ statistical band is
-narrower than our endpoint precision and is not resolved. The labels turn on
-hairline margins: raw marg (seed 0) contains $0.53$ at 68\% by $0.001$ and raw
-control misses it at 90\% by $0.008$. Rows 1--5 use the frozen leakage-free maps of (c),
-calibrated on 2{,}048 simulations and applied to this one real spectrum;
-recalibration shifts and rescales the endpoints, but the quoted median is always
-the raw posterior median. Row 6 is the single mask-augmented network of (f)
-through the same preprocessing, and row 7 pools its three seeds, the deployment
-recommended in (f) (both raw only: neither has a calibration half). Pooled draws
-total $2{,}001$, $667$ per seed, concatenated as elsewhere.}
+\caption{C/O for the T8 benchmark 2MASS J04151954$-$0935066 (SNR 24.5) against
+\citet{hood2024} $0.53\pm0.01$, raw posteriors from every network. ``Contains
+$0.53$'' lists the levels at which the central interval contains Hood's central
+value; the $\pm0.01$ statistical band is narrower than our endpoint precision
+and is not resolved. ``marg.'' networks are trained with opacity randomization
+and ``mask-aug.'' networks with opacity randomization and real-mask
+augmentation (\S\ref{sec:results}(f)). Ensembles pool $667$ draws per seed;
+single networks use $2{,}001$. Bold marks the recommended deployment.}
 \label{tab:real}
 \begin{tabular}{lcccc}
 \toprule
-Method & C/O & 68\% interval & 90\% interval & contains $0.53$ \\
+Network & C/O & 68\% interval & 90\% interval & contains $0.53$ \\
 \midrule
-raw control        & 0.642 & $[0.574,0.710]$ & $[0.538,0.765]$ & neither \\
-recal control      & 0.642 & $[0.546,0.918]$ & $[0.467,0.918]$ & 90\% only \\
-raw marg (seed 0)  & 0.669 & $[0.529,0.830]$ & $[0.418,0.940]$ & \textbf{68\% \& 90\%} \\
-recal marg (seed 0)& 0.669 & $[0.448,0.786]$ & $[0.339,0.915]$ & \textbf{68\% \& 90\%} \\
-3-seed ens.\ marg  & 0.746 & $[0.566,0.970]$ & $[0.460,1.115]$ & 90\% only \\
-mask-aug marg (s0) & 0.493 & $[0.374,0.708]$ & $[0.284,0.940]$ & \textbf{68\% \& 90\%} \\
-mask-aug marg ens.\ & 0.587 & $[0.420,0.828]$ & $[0.329,0.995]$ & \textbf{68\% \& 90\%} \\
+control, seed 0 & 0.642 & $[0.577,0.714]$ & $[0.542,0.766]$ & neither \\
+control, seed 1 & 0.670 & $[0.599,0.740]$ & $[0.560,0.781]$ & neither \\
+control, seed 2 & 0.704 & $[0.638,0.781]$ & $[0.598,0.846]$ & neither \\
+control, 3-seed ens. & 0.673 & $[0.603,0.745]$ & $[0.560,0.799]$ & neither \\
+\midrule
+marg., seed 0 & 0.660 & $[0.524,0.816]$ & $[0.425,0.925]$ & 68\% \& 90\% \\
+marg., seed 1 & 0.918 & $[0.737,1.097]$ & $[0.635,1.193]$ & neither \\
+marg., seed 2 & 0.684 & $[0.516,0.852]$ & $[0.428,0.954]$ & 68\% \& 90\% \\
+marg., 3-seed ens. & 0.740 & $[0.575,0.958]$ & $[0.470,1.101]$ & 90\% only \\
+\midrule
+mask-aug., seed 0 & 0.497 & $[0.374,0.710]$ & $[0.282,0.934]$ & 68\% \& 90\% \\
+mask-aug., seed 1 & 0.617 & $[0.459,0.850]$ & $[0.391,1.032]$ & 68\% \& 90\% \\
+mask-aug., seed 2 & 0.681 & $[0.454,0.860]$ & $[0.361,1.061]$ & 68\% \& 90\% \\
+\textbf{mask-aug., 3-seed ens.} & \textbf{0.595} & $[0.430,0.829]$ & $[0.343,1.009]$ & \textbf{68\% \& 90\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{The real sample: one combined level-3 \texttt{x1d} spectrum per object
+from MAST, NIRSpec G395H/F290LP, ordered by the median SNR after resampling
+onto the model grid. Slit spectra are from the S200A1 fixed slit. ``Pipeline''
+is the JWST calibration pipeline version in the file header. C/O is the
+mask-augmented three-seed ensemble median with its 68\% interval. Three objects
+fall below the training SNR range and are excluded from the summaries of
+\S\ref{sec:results}(g). $^{a}$The T8 benchmark 2MASS J04151954$-$0935066 of
+\citet{hood2024}, at its WISE-epoch position.}
+\label{tab:sample}
+\small
+\begin{tabular}{llcccc}
+\toprule
+Object & Program/obs. & Mode & Pipeline & SNR & C/O (68\%) \\
+\midrule
+WISEA J235402.79$+$024014.1 & 2124/012 & slit & 3.0.0 & 6.3 & $0.28_{-0.09}^{+0.13}$ \\
+WISEU J050305.68$-$564834.0 & 2124/052 & slit & 3.0.0 & 8.0 & $0.31_{-0.11}^{+0.20}$ \\
+CWISEP J193518.59$-$154620.3 & 2124/051 & slit & 3.0.0 & 8.1 & $0.62_{-0.17}^{+0.22}$ \\
+WISE J140518.39$+$553421.3 & 2124/011 & slit & 3.0.0 & 10.1 & $0.49_{-0.20}^{+0.28}$ \\
+WISE J014656.66$+$423410.0 & 2124/056 & slit & 3.0.0 & 11.6 & $0.24_{-0.08}^{+0.12}$ \\
+WISE J222055.31$-$362817.4 & 2124/010 & slit & 3.0.0 & 11.9 & $0.35_{-0.17}^{+0.25}$ \\
+WISEPA J154151.66$-$225025.2 & 2124/005 & slit & 3.0.0 & 12.0 & $0.41_{-0.13}^{+0.20}$ \\
+WISEA J082507.37$+$280548.2 & 2124/004 & slit & 3.0.0 & 12.2 & $0.35_{-0.14}^{+0.21}$ \\
+WISE J053516.80$-$750024.9 & 2124/003 & slit & 3.0.0 & 12.8 & $0.50_{-0.19}^{+0.29}$ \\
+WISEPA J171104.60$+$350036.8 & 2124/007 & slit & 3.0.0 & 17.4 & $0.43_{-0.13}^{+0.17}$ \\
+WISEPA J075108.79$-$763449.6 & 2124/008 & slit & 3.0.0 & 19.2 & $0.40_{-0.13}^{+0.24}$ \\
+WISE J041521.21$-$093500.6$^{a}$ & 2124/059 & slit & 3.0.0 & 24.5 & $0.59_{-0.17}^{+0.23}$ \\
+WISE J182831.08$+$265037.7 & 1189/011 & slit & 2.0.1 & 45.8 & $0.30_{-0.12}^{+0.20}$ \\
+WISE J045853.89$+$643452.9 & 1189/004 & IFU & 2.0.1 & 106.7 & $0.30_{-0.10}^{+0.13}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -667,29 +722,24 @@ mask-aug marg ens.\ & 0.587 & $[0.420,0.828]$ & $[0.329,0.995]$ & \textbf{68\% \
 \begin{figure}[h]
 \centering
 \includegraphics[width=3.05in]{figures/fig1_deployment_maskaug.pdf}
-\caption{C/O coverage at nominal 0.90 on 1{,}024 perturbed held-out objects,
-both series evaluated on the same set at matched seed; both are single networks
-(the marginalized seed 0 trained without and with mask augmentation). Applying
-the 105 real G395H bad-pixel masks with median filling (median good-pixel
-fraction 0.47) costs the network trained without mask augmentation more than
-half its coverage; the mask-augmented network holds within 0.05 of its clean
-value.}
+\caption{C/O coverage at nominal 0.90 on $1{,}024$ perturbed held-out objects for
+three-seed marginalized ensembles trained without (light) and with (dark) mask
+augmentation, scored on the same spectra. The masks come from the 14 real
+spectra of \S\ref{sec:results}(g) (median good-pixel fraction 0.89). Masking
+costs the un-augmented ensemble about a quarter of its coverage; the
+mask-augmented ensemble stays above nominal.}
 \label{fig:deploy}
 \end{figure}
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\linewidth]{figures/fig2_real_sample.pdf}
-\caption{Retrieved C/O for 105 JWST/G395H spectral products of 13 late-T/Y
-dwarfs, ordered by SNR, against the \citet{hood2024} T8 band ($0.53\pm0.01$,
-gold); spectra left of the dashed rule fall below the training SNR support
-($\mathrm{SNR}<10$) and are shown greyed. At the T8 spectrum the three-seed
-marginalized ensemble's 68\% bar stops just above the band (lower edge $0.566$
-against $0.53$); it is the ensemble's 90\% interval, not drawn here, that
-contains $0.53$, while the single marginalized seed contains it at both levels
-(Table~\ref{tab:real}). The control medians cluster below the band (median
-$0.47$ over the 105 products, $0.49$ over the 58 in-support ones), with no error
-budget for opacity.}
+\caption{Retrieved C/O for the 14 objects of Table~\ref{tab:sample}, one
+combined G395H spectrum each, ordered by median SNR (in parentheses). Navy: the
+mask-augmented three-seed ensemble, median and 68\% interval. Orange: median of
+the fixed-opacity control, seed 0. Gold: the \citet{hood2024} value for the T8
+benchmark J0415. Objects left of the dashed rule fall below the training SNR
+range and are drawn faded.}
 \label{fig:real}
 \end{figure}
 
@@ -728,8 +778,9 @@ clipping of out-of-range samples, which would distort the tails that the coverag
 statistics measure.
 \textbf{Training.} AdamW, learning rate $10^{-4}$, weight decay $10^{-4}$, batch
 64, up to 60 epochs, validation split 0.1, best-validation checkpointing (the
-lowest-validation-NLL epoch is restored). Mask augmentation applies a randomly
-drawn real mask to each training spectrum with probability 0.9.
+lowest-validation-NLL epoch is restored). Mask augmentation applies a mask drawn at
+random from the 105-product set of versions 1 and 2 to each training spectrum
+with probability 0.9.
 \textbf{Data volume.} Shard size 128 spectra; primary models trained on 3{,}000
 shards ($384{,}000$ nominal, $\approx$346k after a strict finite-pixel filter
 that drops $\sim$10\%); the scaling point uses 800 shards. That filter is
