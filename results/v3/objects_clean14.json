@@ -1,0 +1,86 @@
+[
+ {
+  "target_key": "jw01189-o004_t002_nirspec_g395h-f290lp",
+  "observed_npy": "real_inputs/jw01189-o004_t002_nirspec_g395h-f290lp_observed.npy",
+  "error_npy": "real_inputs/jw01189-o004_t002_nirspec_g395h-f290lp_error.npy",
+  "mask_npy": "real_inputs/jw01189-o004_t002_nirspec_g395h-f290lp_mask.npy"
+ },
+ {
+  "target_key": "jw01189-o011_t005-s000000001_nirspec_f290lp-g395h-s200a1",
+  "observed_npy": "real_inputs/jw01189-o011_t005-s000000001_nirspec_f290lp-g395h-s200a1_observed.npy",
+  "error_npy": "real_inputs/jw01189-o011_t005-s000000001_nirspec_f290lp-g395h-s200a1_error.npy",
+  "mask_npy": "real_inputs/jw01189-o011_t005-s000000001_nirspec_f290lp-g395h-s200a1_mask.npy"
+ },
+ {
+  "target_key": "jw02124-o003_t003-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1",
+  "observed_npy": "real_inputs/jw02124-o003_t003-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_observed.npy",
+  "error_npy": "real_inputs/jw02124-o003_t003-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_error.npy",
+  "mask_npy": "real_inputs/jw02124-o003_t003-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_mask.npy"
+ },
+ {
+  "target_key": "jw02124-o004_t004-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1",
+  "observed_npy": "real_inputs/jw02124-o004_t004-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_observed.npy",
+  "error_npy": "real_inputs/jw02124-o004_t004-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_error.npy",
+  "mask_npy": "real_inputs/jw02124-o004_t004-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_mask.npy"
+ },
+ {
+  "target_key": "jw02124-o005_t005-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1",
+  "observed_npy": "real_inputs/jw02124-o005_t005-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_observed.npy",
+  "error_npy": "real_inputs/jw02124-o005_t005-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_error.npy",
+  "mask_npy": "real_inputs/jw02124-o005_t005-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_mask.npy"
+ },
+ {
+  "target_key": "jw02124-o007_t007-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1",
+  "observed_npy": "real_inputs/jw02124-o007_t007-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_observed.npy",
+  "error_npy": "real_inputs/jw02124-o007_t007-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_error.npy",
+  "mask_npy": "real_inputs/jw02124-o007_t007-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_mask.npy"
+ },
+ {
+  "target_key": "jw02124-o008_t008-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1",
+  "observed_npy": "real_inputs/jw02124-o008_t008-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_observed.npy",
+  "error_npy": "real_inputs/jw02124-o008_t008-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_error.npy",
+  "mask_npy": "real_inputs/jw02124-o008_t008-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_mask.npy"
+ },
+ {
+  "target_key": "jw02124-o010_t010-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1",
+  "observed_npy": "real_inputs/jw02124-o010_t010-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_observed.npy",
+  "error_npy": "real_inputs/jw02124-o010_t010-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_error.npy",
+  "mask_npy": "real_inputs/jw02124-o010_t010-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_mask.npy"
+ },
+ {
+  "target_key": "jw02124-o011_t011-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1",
+  "observed_npy": "real_inputs/jw02124-o011_t011-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_observed.npy",
+  "error_npy": "real_inputs/jw02124-o011_t011-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_error.npy",
+  "mask_npy": "real_inputs/jw02124-o011_t011-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_mask.npy"
+ },
+ {
+  "target_key": "jw02124-o012_t012-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1",
+  "observed_npy": "real_inputs/jw02124-o012_t012-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_observed.npy",
+  "error_npy": "real_inputs/jw02124-o012_t012-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_error.npy",
+  "mask_npy": "real_inputs/jw02124-o012_t012-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_mask.npy"
+ },
+ {
+  "target_key": "jw02124-o051_t051-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1",
+  "observed_npy": "real_inputs/jw02124-o051_t051-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_observed.npy",
+  "error_npy": "real_inputs/jw02124-o051_t051-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_error.npy",
+  "mask_npy": "real_inputs/jw02124-o051_t051-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_mask.npy"
+ },
+ {
+  "target_key": "jw02124-o052_t052-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1",
+  "observed_npy": "real_inputs/jw02124-o052_t052-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_observed.npy",
+  "error_npy": "real_inputs/jw02124-o052_t052-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_error.npy",
+  "mask_npy": "real_inputs/jw02124-o052_t052-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_mask.npy"
+ },
+ {
+  "target_key": "jw02124-o056_t056-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1",
+  "observed_npy": "real_inputs/jw02124-o056_t056-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_observed.npy",
+  "error_npy": "real_inputs/jw02124-o056_t056-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_error.npy",
+  "mask_npy": "real_inputs/jw02124-o056_t056-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_mask.npy"
+ },
+ {
+  "target_key": "jw02124-o059_t059-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1",
+  "observed_npy": "real_inputs/jw02124-o059_t059-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_observed.npy",
+  "error_npy": "real_inputs/jw02124-o059_t059-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_error.npy",
+  "mask_npy": "real_inputs/jw02124-o059_t059-s000000001_nirspec_f290lp-g395h-s200a1-subs200a1_mask.npy"
+ }
+]
